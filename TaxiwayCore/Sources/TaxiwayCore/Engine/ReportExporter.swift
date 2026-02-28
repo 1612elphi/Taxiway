@@ -154,7 +154,7 @@ public enum ReportExporter {
                 return "Image \(id) (page \(page + 1))"
             case .colourSpace(let name, _):
                 return "Colour space: \(name)"
-            case .annotation(let type, let page):
+            case .annotation(let type, let page, _):
                 return "\(type) (page \(page + 1))"
             }
         }.joined(separator: "; ")

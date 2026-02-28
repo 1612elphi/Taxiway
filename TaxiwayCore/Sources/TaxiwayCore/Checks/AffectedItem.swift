@@ -6,5 +6,5 @@ public enum AffectedItem: Codable, Sendable, Equatable {
     case font(name: String, pages: [Int])
     case image(id: String, page: Int)
     case colourSpace(name: String, pages: [Int])
-    case annotation(type: String, page: Int)
+    case annotation(type: String, page: Int, bounds: AnnotationBounds? = nil)
 }

@@ -27,7 +27,7 @@ public struct AnnotationsPresentCheck: ParameterisedCheck {
             .sorted()
             .joined(separator: ", ")
         let affectedItems = document.annotations.map {
-            AffectedItem.annotation(type: $0.type.rawValue, page: $0.pageIndex)
+            AffectedItem.annotation(type: $0.type.rawValue, page: $0.pageIndex, bounds: $0.bounds)
         }
         return fail(
             message: "Document contains \(document.annotations.count) annotation(s)",
