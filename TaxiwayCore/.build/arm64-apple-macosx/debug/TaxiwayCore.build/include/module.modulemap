@@ -1,0 +1,3 @@
+module TaxiwayCore {
+    header "/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCore.build/include/TaxiwayCore-Swift.h"
+}

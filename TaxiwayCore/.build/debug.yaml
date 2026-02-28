@@ -1,0 +1,112 @@
+client:
+  name: basic
+  file-system: device-agnostic
+tools: {}
+targets:
+  "PackageStructure": ["<PackageStructure>"]
+  "TaxiwayCore-arm64-apple-macosx26.0-debug.module": ["<TaxiwayCore-arm64-apple-macosx26.0-debug.module>"]
+  "TaxiwayCorePackageTests-arm64-apple-macosx26.0-debug.module": ["<TaxiwayCorePackageTests-arm64-apple-macosx26.0-debug.module>"]
+  "TaxiwayCorePackageTests-arm64-apple-macosx26.0-debug.test": ["<TaxiwayCorePackageTests-arm64-apple-macosx26.0-debug.test>"]
+  "TaxiwayCoreTests-arm64-apple-macosx26.0-debug.module": ["<TaxiwayCoreTests-arm64-apple-macosx26.0-debug.module>"]
+  "main": ["<TaxiwayCore-arm64-apple-macosx26.0-debug.module>"]
+  "test": ["<TaxiwayCore-arm64-apple-macosx26.0-debug.module>","<TaxiwayCorePackageTests-arm64-apple-macosx26.0-debug.test>","<TaxiwayCoreTests-arm64-apple-macosx26.0-debug.module>"]
+default: "main"
+nodes:
+  "/Users/ruby/GitRepos/Taxiway/TaxiwayCore/Sources/TaxiwayCore/":
+    is-directory-structure: true
+    content-exclusion-patterns: [".git",".build"]
+  "/Users/ruby/GitRepos/Taxiway/TaxiwayCore/Tests/TaxiwayCoreTests/":
+    is-directory-structure: true
+    content-exclusion-patterns: [".git",".build"]
+commands:
+  "/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCore.build/sources":
+    tool: write-auxiliary-file
+    inputs: ["<sources-file-list>","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/Sources/TaxiwayCore/TaxiwayCore.swift"]
+    outputs: ["/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCore.build/sources"]
+    description: "Write auxiliary file /Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCore.build/sources"
+
+  "/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCorePackageTests.build/sources":
+    tool: write-auxiliary-file
+    inputs: ["<sources-file-list>","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCorePackageTests.derived/runner.swift"]
+    outputs: ["/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCorePackageTests.build/sources"]
+    description: "Write auxiliary file /Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCorePackageTests.build/sources"
+
+  "/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCorePackageTests.derived/runner.swift":
+    tool: test-entry-point-tool
+    inputs: []
+    outputs: ["/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCorePackageTests.derived/runner.swift"]
+
+  "/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCorePackageTests.product/Objects.LinkFileList":
+    tool: write-auxiliary-file
+    inputs: ["<link-file-list>","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCore.build/TaxiwayCore.swift.o","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCorePackageTests.build/runner.swift.o","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCoreTests.build/TaxiwayCoreTests.swift.o"]
+    outputs: ["/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCorePackageTests.product/Objects.LinkFileList"]
+    description: "Write auxiliary file /Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCorePackageTests.product/Objects.LinkFileList"
+
+  "/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCoreTests.build/sources":
+    tool: write-auxiliary-file
+    inputs: ["<sources-file-list>","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/Tests/TaxiwayCoreTests/TaxiwayCoreTests.swift"]
+    outputs: ["/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCoreTests.build/sources"]
+    description: "Write auxiliary file /Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCoreTests.build/sources"
+
+  "/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt":
+    tool: write-auxiliary-file
+    inputs: ["<swift-get-version>","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"]
+    outputs: ["/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"]
+    always-out-of-date: "true"
+    description: "Write auxiliary file /Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+
+  "<TaxiwayCore-arm64-apple-macosx26.0-debug.module>":
+    tool: phony
+    inputs: ["/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCore.build/TaxiwayCore.swift.o","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/Modules/TaxiwayCore.swiftmodule"]
+    outputs: ["<TaxiwayCore-arm64-apple-macosx26.0-debug.module>"]
+
+  "<TaxiwayCorePackageTests-arm64-apple-macosx26.0-debug.module>":
+    tool: phony
+    inputs: ["/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCorePackageTests.build/runner.swift.o","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/Modules/TaxiwayCorePackageTests.swiftmodule"]
+    outputs: ["<TaxiwayCorePackageTests-arm64-apple-macosx26.0-debug.module>"]
+
+  "<TaxiwayCorePackageTests-arm64-apple-macosx26.0-debug.test>":
+    tool: phony
+    inputs: ["/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCorePackageTests.xctest/Contents/MacOS/TaxiwayCorePackageTests"]
+    outputs: ["<TaxiwayCorePackageTests-arm64-apple-macosx26.0-debug.test>"]
+
+  "<TaxiwayCoreTests-arm64-apple-macosx26.0-debug.module>":
+    tool: phony
+    inputs: ["/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCoreTests.build/TaxiwayCoreTests.swift.o","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/Modules/TaxiwayCoreTests.swiftmodule"]
+    outputs: ["<TaxiwayCoreTests-arm64-apple-macosx26.0-debug.module>"]
+
+  "C.TaxiwayCore-arm64-apple-macosx26.0-debug.module":
+    tool: shell
+    inputs: ["/Users/ruby/GitRepos/Taxiway/TaxiwayCore/Sources/TaxiwayCore/TaxiwayCore.swift","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCore.build/sources"]
+    outputs: ["/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCore.build/TaxiwayCore.swift.o","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/Modules/TaxiwayCore.swiftmodule"]
+    description: "Compiling Swift Module 'TaxiwayCore' (1 sources)"
+    args: ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc","-module-name","TaxiwayCore","-emit-dependencies","-emit-module","-emit-module-path","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/Modules/TaxiwayCore.swiftmodule","-output-file-map","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCore.build/output-file-map.json","-parse-as-library","-incremental","-c","@/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCore.build/sources","-I","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/Modules","-target","arm64-apple-macosx14.0","-incremental","-enable-batch-mode","-serialize-diagnostics","-index-store-path","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/index/store","-Onone","-enable-testing","-j14","-DSWIFT_PACKAGE","-DDEBUG","-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE","-module-cache-path","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/ModuleCache","-parseable-output","-parse-as-library","-emit-objc-header","-emit-objc-header-path","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCore.build/include/TaxiwayCore-Swift.h","-swift-version","6","-plugin-path","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing","-sdk","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks","-I","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-L","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-g","-Xcc","-isysroot","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk","-Xcc","-F","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-Xcc","-F","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks","-Xcc","-fPIC","-Xcc","-g","-package-name","taxiwaycore"]
+
+  "C.TaxiwayCorePackageTests-arm64-apple-macosx26.0-debug.module":
+    tool: shell
+    inputs: ["/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCorePackageTests.derived/runner.swift","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/Modules/TaxiwayCoreTests.swiftmodule","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCorePackageTests.build/sources"]
+    outputs: ["/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCorePackageTests.build/runner.swift.o","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/Modules/TaxiwayCorePackageTests.swiftmodule"]
+    description: "Compiling Swift Module 'TaxiwayCorePackageTests' (1 sources)"
+    args: ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc","-module-name","TaxiwayCorePackageTests","-emit-dependencies","-emit-module","-emit-module-path","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/Modules/TaxiwayCorePackageTests.swiftmodule","-output-file-map","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCorePackageTests.build/output-file-map.json","-parse-as-library","-incremental","-c","@/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCorePackageTests.build/sources","-I","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/Modules","-target","arm64-apple-macosx14.0","-incremental","-enable-batch-mode","-serialize-diagnostics","-index-store-path","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/index/store","-Onone","-enable-testing","-Xfrontend","-enable-cross-import-overlays","-j14","-DSWIFT_PACKAGE","-DDEBUG","-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE","-module-cache-path","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/ModuleCache","-parseable-output","-parse-as-library","-emit-objc-header","-emit-objc-header-path","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCorePackageTests.build/include/TaxiwayCorePackageTests-Swift.h","-plugin-path","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing","-sdk","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks","-I","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-L","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-g","-Xcc","-isysroot","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk","-Xcc","-F","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-Xcc","-F","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks","-Xcc","-fPIC","-Xcc","-g","-package-name","taxiwaycore"]
+
+  "C.TaxiwayCorePackageTests-arm64-apple-macosx26.0-debug.test":
+    tool: shell
+    inputs: ["/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCore.build/TaxiwayCore.swift.o","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCorePackageTests.build/runner.swift.o","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCoreTests.build/TaxiwayCoreTests.swift.o","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCorePackageTests.product/Objects.LinkFileList"]
+    outputs: ["/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCorePackageTests.xctest/Contents/MacOS/TaxiwayCorePackageTests"]
+    description: "Linking ./.build/arm64-apple-macosx/debug/TaxiwayCorePackageTests.xctest/Contents/MacOS/TaxiwayCorePackageTests"
+    args: ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc","-L","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug","-o","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCorePackageTests.xctest/Contents/MacOS/TaxiwayCorePackageTests","-module-name","TaxiwayCorePackageTests","-Xlinker","-no_warn_duplicate_libraries","-Xlinker","-bundle","-Xlinker","-rpath","-Xlinker","@loader_path/../../../","@/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCorePackageTests.product/Objects.LinkFileList","-Xlinker","-rpath","-Xlinker","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-6.2/macosx","-target","arm64-apple-macosx14.0","-Xlinker","-add_ast_path","-Xlinker","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/Modules/TaxiwayCore.swiftmodule","-Xlinker","-add_ast_path","-Xlinker","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/Modules/TaxiwayCorePackageTests.swiftmodule","-Xlinker","-add_ast_path","-Xlinker","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/Modules/TaxiwayCoreTests.swiftmodule","-plugin-path","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing","-sdk","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks","-I","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-L","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-g"]
+
+  "C.TaxiwayCoreTests-arm64-apple-macosx26.0-debug.module":
+    tool: shell
+    inputs: ["/Users/ruby/GitRepos/Taxiway/TaxiwayCore/Tests/TaxiwayCoreTests/TaxiwayCoreTests.swift","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/Modules/TaxiwayCore.swiftmodule","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCoreTests.build/sources"]
+    outputs: ["/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCoreTests.build/TaxiwayCoreTests.swift.o","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/Modules/TaxiwayCoreTests.swiftmodule"]
+    description: "Compiling Swift Module 'TaxiwayCoreTests' (1 sources)"
+    args: ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc","-module-name","TaxiwayCoreTests","-emit-dependencies","-emit-module","-emit-module-path","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/Modules/TaxiwayCoreTests.swiftmodule","-output-file-map","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCoreTests.build/output-file-map.json","-parse-as-library","-incremental","-c","@/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCoreTests.build/sources","-I","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/Modules","-target","arm64-apple-macosx14.0","-incremental","-enable-batch-mode","-serialize-diagnostics","-index-store-path","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/index/store","-Onone","-enable-testing","-Xfrontend","-enable-cross-import-overlays","-j14","-DSWIFT_PACKAGE","-DDEBUG","-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE","-module-cache-path","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/ModuleCache","-parseable-output","-parse-as-library","-swift-version","6","-plugin-path","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing","-sdk","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks","-I","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-L","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-g","-Xcc","-isysroot","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk","-Xcc","-F","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-Xcc","-F","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks","-Xcc","-fPIC","-Xcc","-g","-package-name","taxiwaycore"]
+
+  "PackageStructure":
+    tool: package-structure-tool
+    inputs: ["/Users/ruby/GitRepos/Taxiway/TaxiwayCore/Sources/TaxiwayCore/","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/Tests/TaxiwayCoreTests/","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/Package.swift","/Users/ruby/GitRepos/Taxiway/TaxiwayCore/Package.resolved"]
+    outputs: ["<PackageStructure>"]
+    description: "Planning build"
+    allow-missing-inputs: true
+

@@ -1,0 +1,58 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     '/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCorePackageTests.xctest/Contents/MacOS/TaxiwayCorePackageTests'
+relocations:
+  - { offset: 0xFF, size: 0x8, addend: 0x0, symName: '_$s23TaxiwayCorePackageTests6RunnerV14testingLibrary33_1E336DCC43CD12C5D49EE39BCFF42BF1LLSSyFZ', symObjAddr: 0x0, symBinAddr: 0xAF0, symSize: 0x230 }
+  - { offset: 0x1FC, size: 0x8, addend: 0x0, symName: ___swift_instantiateConcreteTypeFromMangledNameV2, symObjAddr: 0x230, symBinAddr: 0xD20, symSize: 0x68 }
+  - { offset: 0x20F, size: 0x8, addend: 0x0, symName: '_$sSaySSGSayxGSlsWl', symObjAddr: 0x298, symBinAddr: 0xD88, symSize: 0x74 }
+  - { offset: 0x222, size: 0x8, addend: 0x0, symName: ___swift_instantiateConcreteTypeFromMangledNameAbstractV2, symObjAddr: 0x30C, symBinAddr: 0xDFC, symSize: 0x70 }
+  - { offset: 0x235, size: 0x8, addend: 0x0, symName: '_$ss16IndexingIteratorVySaySSGGWOh', symObjAddr: 0x37C, symBinAddr: 0xE6C, symSize: 0x28 }
+  - { offset: 0x248, size: 0x8, addend: 0x0, symName: '_$sS2cMScAsWl', symObjAddr: 0x604, symBinAddr: 0x10F4, symSize: 0x6C }
+  - { offset: 0x25B, size: 0x8, addend: 0x0, symName: '_$sIetH_yts5Error_pIegHrzo_TR', symObjAddr: 0x900, symBinAddr: 0x13F0, symSize: 0x78 }
+  - { offset: 0x278, size: 0x8, addend: 0x0, symName: '_$sIetH_yts5Error_pIegHrzo_TRTQ0_', symObjAddr: 0x978, symBinAddr: 0x1468, symSize: 0x64 }
+  - { offset: 0x295, size: 0x8, addend: 0x0, symName: '_$sIetH_yts5Error_pIegHrzo_TRTA', symObjAddr: 0xA04, symBinAddr: 0x14F4, symSize: 0x9C }
+  - { offset: 0x2A8, size: 0x8, addend: 0x0, symName: '_$sIetH_yts5Error_pIegHrzo_TRTATQ0_', symObjAddr: 0xAA0, symBinAddr: 0x1590, symSize: 0x60 }
+  - { offset: 0x2BB, size: 0x8, addend: 0x0, symName: '_$s23TaxiwayCorePackageTests6RunnerVMa', symObjAddr: 0xB00, symBinAddr: 0x15F0, symSize: 0x14 }
+  - { offset: 0x322, size: 0x8, addend: 0x0, symName: '_$s23TaxiwayCorePackageTests6RunnerV14testingLibrary33_1E336DCC43CD12C5D49EE39BCFF42BF1LLSSyFZ', symObjAddr: 0x0, symBinAddr: 0xAF0, symSize: 0x230 }
+  - { offset: 0x3A2, size: 0x8, addend: 0x0, symName: '_$s23TaxiwayCorePackageTests6RunnerV4mainyyYaFZ', symObjAddr: 0x3A4, symBinAddr: 0xE94, symSize: 0xA8 }
+  - { offset: 0x3DF, size: 0x8, addend: 0x0, symName: '_$s23TaxiwayCorePackageTests6RunnerV4mainyyYaFZTY0_', symObjAddr: 0x44C, symBinAddr: 0xF3C, symSize: 0x15C }
+  - { offset: 0x41F, size: 0x8, addend: 0x0, symName: '_$s23TaxiwayCorePackageTests6RunnerV4mainyyYaFZTQ1_', symObjAddr: 0x5A8, symBinAddr: 0x1098, symSize: 0x5C }
+  - { offset: 0x460, size: 0x8, addend: 0x0, symName: '_$s23TaxiwayCorePackageTests6RunnerV5$mainyyYaFZ', symObjAddr: 0x670, symBinAddr: 0x1160, symSize: 0x84 }
+  - { offset: 0x47D, size: 0x8, addend: 0x0, symName: '_$s23TaxiwayCorePackageTests6RunnerV5$mainyyYaFZTQ0_', symObjAddr: 0x6F4, symBinAddr: 0x11E4, symSize: 0x8C }
+  - { offset: 0x49A, size: 0x8, addend: 0x0, symName: '_$s23TaxiwayCorePackageTests6RunnerV5$mainyyYaFZTY1_', symObjAddr: 0x780, symBinAddr: 0x1270, symSize: 0x40 }
+  - { offset: 0x4B7, size: 0x8, addend: 0x0, symName: '_$s23TaxiwayCorePackageTests6RunnerVACycfC', symObjAddr: 0x7C0, symBinAddr: 0x12B0, symSize: 0x4 }
+  - { offset: 0x4D7, size: 0x8, addend: 0x0, symName: _async_Main, symObjAddr: 0x7C4, symBinAddr: 0x12B4, symSize: 0x6C }
+  - { offset: 0x4EA, size: 0x8, addend: 0x0, symName: _async_MainTQ0_, symObjAddr: 0x830, symBinAddr: 0x1320, symSize: 0x48 }
+  - { offset: 0x4FD, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x878, symBinAddr: 0x1368, symSize: 0x88 }
+  - { offset: 0x58E, size: 0x8, addend: 0x0, symName: '_$s16TaxiwayCoreTests04$s16aB52Tests13packageBuilds4TestfMp_17Z5a5eb7a2ee84e7a1fMu_33_F2A1BF31EBEEB74AE9716E859F877447LLyyYaYbKF', symObjAddr: 0x0, symBinAddr: 0x1604, symSize: 0x20 }
+  - { offset: 0x5B0, size: 0x8, addend: 0x0, symName: '_$s16TaxiwayCoreTests04$s16aB59Tests13packageBuilds4TestfMp_24accessor5a5eb7a2ee84e7a1fMu_33_F2A1BF31EBEEB74AE9716E859F877447LLySbSv_S2VSgSutXCvp', symObjAddr: 0xC88, symBinAddr: 0x4228, symSize: 0x0 }
+  - { offset: 0x5C9, size: 0x8, addend: 0x0, symName: '_$s16TaxiwayCoreTests04$s16aB68Tests13packageBuilds4TestfMp_33testContentRecord5a5eb7a2ee84e7a1fMu_33_F2A1BF31EBEEB74AE9716E859F877447LLs6UInt32V4kind_AE9reserved1SbSv_S2VSgSutXCSg8accessorSu7contextSu9reserved2tvp', symObjAddr: 0xC90, symBinAddr: 0x4230, symSize: 0x0 }
+  - { offset: 0x5D6, size: 0x8, addend: 0x0, symName: '_$s16TaxiwayCoreTests04$s16aB52Tests13packageBuilds4TestfMp_17Z5a5eb7a2ee84e7a1fMu_33_F2A1BF31EBEEB74AE9716E859F877447LLyyYaYbKF', symObjAddr: 0x0, symBinAddr: 0x1604, symSize: 0x20 }
+  - { offset: 0x5F3, size: 0x8, addend: 0x0, symName: '_$s16TaxiwayCoreTests04$s16aB52Tests13packageBuilds4TestfMp_17Z5a5eb7a2ee84e7a1fMu_33_F2A1BF31EBEEB74AE9716E859F877447LLyyYaYbKF0dabefgh10_7__localfJ1_L_yyScA_pSgYiYaYbKF', symObjAddr: 0x1B8, symBinAddr: 0x17BC, symSize: 0xE0 }
+  - { offset: 0x625, size: 0x8, addend: 0x0, symName: '_$s16TaxiwayCoreTests04$s16aB52Tests13packageBuilds4TestfMp_17Z5a5eb7a2ee84e7a1fMu_33_F2A1BF31EBEEB74AE9716E859F877447LLyyYaYbKF0dabefgh10_7__localfJ1_L_yyScA_pSgYiYaYbKFTY0_', symObjAddr: 0x298, symBinAddr: 0x189C, symSize: 0x9C }
+  - { offset: 0x681, size: 0x8, addend: 0x0, symName: '_$s16TaxiwayCoreTests04$s16aB52Tests13packageBuilds4TestfMp_17Z5a5eb7a2ee84e7a1fMu_33_F2A1BF31EBEEB74AE9716E859F877447LLyyYaYbKF0dabefgh10_7__localfJ1_L_yyScA_pSgYiYaYbKFTQ1_', symObjAddr: 0x334, symBinAddr: 0x1938, symSize: 0x7C }
+  - { offset: 0x6B6, size: 0x8, addend: 0x0, symName: '_$s16TaxiwayCoreTests04$s16aB52Tests13packageBuilds4TestfMp_17Z5a5eb7a2ee84e7a1fMu_33_F2A1BF31EBEEB74AE9716E859F877447LLyyYaYbKF0dabefgh10_7__localfJ1_L_yyScA_pSgYiYaYbKFTY2_', symObjAddr: 0x3B0, symBinAddr: 0x19B4, symSize: 0x11C }
+  - { offset: 0x6F0, size: 0x8, addend: 0x0, symName: '_$s16TaxiwayCoreTests04$s16aB52Tests13packageBuilds4TestfMp_17Z5a5eb7a2ee84e7a1fMu_33_F2A1BF31EBEEB74AE9716E859F877447LLyyYaYbKFTY0_', symObjAddr: 0x20, symBinAddr: 0x1624, symSize: 0x84 }
+  - { offset: 0x713, size: 0x8, addend: 0x0, symName: '_$s16TaxiwayCoreTests04$s16aB52Tests13packageBuilds4TestfMp_17Z5a5eb7a2ee84e7a1fMu_33_F2A1BF31EBEEB74AE9716E859F877447LLyyYaYbKFTQ1_', symObjAddr: 0xA4, symBinAddr: 0x16A8, symSize: 0xB0 }
+  - { offset: 0x736, size: 0x8, addend: 0x0, symName: '_$s16TaxiwayCoreTests04$s16aB52Tests13packageBuilds4TestfMp_17Z5a5eb7a2ee84e7a1fMu_33_F2A1BF31EBEEB74AE9716E859F877447LLyyYaYbKFTY2_', symObjAddr: 0x154, symBinAddr: 0x1758, symSize: 0x50 }
+  - { offset: 0x759, size: 0x8, addend: 0x0, symName: '_$s16TaxiwayCoreTests04$s16aB52Tests13packageBuilds4TestfMp_17Z5a5eb7a2ee84e7a1fMu_33_F2A1BF31EBEEB74AE9716E859F877447LLyyYaYbKF0dabefgh10_7__localfJ1_L_yyScA_pSgYiYaYbKFfA_', symObjAddr: 0x1A4, symBinAddr: 0x17A8, symSize: 0x14 }
+  - { offset: 0x79C, size: 0x8, addend: 0x0, symName: '_$s16TaxiwayCoreTests13packageBuildsyyF', symObjAddr: 0x4CC, symBinAddr: 0x1AD0, symSize: 0x24C }
+  - { offset: 0x7CD, size: 0x8, addend: 0x0, symName: '_$s16TaxiwayCoreTests13packageBuildsyyF7Testing12__ExpressionVSgyXEfu0_', symObjAddr: 0xA7C, symBinAddr: 0x2080, symSize: 0x40 }
+  - { offset: 0x7E4, size: 0x8, addend: 0x0, symName: '_$s16TaxiwayCoreTests13packageBuildsyyFSSSgyXEfu1_', symObjAddr: 0xABC, symBinAddr: 0x20C0, symSize: 0xC }
+  - { offset: 0x7FB, size: 0x8, addend: 0x0, symName: '_$s16TaxiwayCoreTests13packageBuildsyyFSSSgyXEfu2_', symObjAddr: 0xAC8, symBinAddr: 0x20CC, symSize: 0xC }
+  - { offset: 0x812, size: 0x8, addend: 0x0, symName: '_$s16TaxiwayCoreTests13packageBuildsyyFSSSgyXEfu3_', symObjAddr: 0xAD4, symBinAddr: 0x20D8, symSize: 0xC }
+  - { offset: 0x829, size: 0x8, addend: 0x0, symName: '_$s16TaxiwayCoreTests13packageBuildsyyFSay7Testing7CommentVGyXEfu4_', symObjAddr: 0xAE0, symBinAddr: 0x20E4, symSize: 0x78 }
+  - { offset: 0x841, size: 0x8, addend: 0x0, symName: '_$s16TaxiwayCoreTests04$s16aB60Tests13packageBuilds4TestfMp_25generator5a5eb7a2ee84e7a1fMu_33_F2A1BF31EBEEB74AE9716E859F877447LL7Testing4TestVyYaYbF', symObjAddr: 0x718, symBinAddr: 0x1D1C, symSize: 0x78 }
+  - { offset: 0x85E, size: 0x8, addend: 0x0, symName: '_$s16TaxiwayCoreTests04$s16aB60Tests13packageBuilds4TestfMp_25generator5a5eb7a2ee84e7a1fMu_33_F2A1BF31EBEEB74AE9716E859F877447LL7Testing4TestVyYaYbFTY0_', symObjAddr: 0x790, symBinAddr: 0x1D94, symSize: 0x1AC }
+  - { offset: 0x87B, size: 0x8, addend: 0x0, symName: '_$s16TaxiwayCoreTests04$s16aB59Tests13packageBuilds4TestfMp_24accessor5a5eb7a2ee84e7a1fMu_33_F2A1BF31EBEEB74AE9716E859F877447LLySbSv_S2VSgSutXCvpfiSbSv_SVADSutcfU_', symObjAddr: 0x93C, symBinAddr: 0x1F40, symSize: 0x6C }
+  - { offset: 0x8CD, size: 0x8, addend: 0x0, symName: '_$s16TaxiwayCoreTests04$s16aB59Tests13packageBuilds4TestfMp_24accessor5a5eb7a2ee84e7a1fMu_33_F2A1BF31EBEEB74AE9716E859F877447LLySbSv_S2VSgSutXCvpfiSbSv_SVADSutcfU_To', symObjAddr: 0x9A8, symBinAddr: 0x1FAC, symSize: 0x18 }
+  - { offset: 0x8E4, size: 0x8, addend: 0x0, symName: '_$s16TaxiwayCoreTests04$s16aB59Tests13packageBuilds4TestfMp_24accessor5a5eb7a2ee84e7a1fMu_33_F2A1BF31EBEEB74AE9716E859F877447LLySbSv_S2VSgSutXCvau', symObjAddr: 0x9C0, symBinAddr: 0x1FC4, symSize: 0xC }
+  - { offset: 0x901, size: 0x8, addend: 0x0, symName: '_$s16TaxiwayCoreTests04$s16aB68Tests13packageBuilds4TestfMp_33testContentRecord5a5eb7a2ee84e7a1fMu_33_F2A1BF31EBEEB74AE9716E859F877447LLs6UInt32V4kind_AE9reserved1SbSv_S2VSgSutXCSg8accessorSu7contextSu9reserved2tvau', symObjAddr: 0x9CC, symBinAddr: 0x1FD0, symSize: 0xC }
+  - { offset: 0x94D, size: 0x8, addend: 0x0, symName: '_$ss6ResultOyyts5Error_pGWOh', symObjAddr: 0xBC0, symBinAddr: 0x215C, symSize: 0x34 }
+  - { offset: 0x960, size: 0x8, addend: 0x0, symName: '_$ss6ResultOyyts5Error_pGWOe', symObjAddr: 0xBF4, symBinAddr: 0x2190, symSize: 0x30 }
+  - { offset: 0x973, size: 0x8, addend: 0x0, symName: '_$s16TaxiwayCoreTests0076$s16TaxiwayCoreTests13packageBuilds4TestfMp_20__$5a5eb7a2ee84e7a1fMu__nAHHEeOMa', symObjAddr: 0xC24, symBinAddr: 0x21C0, symSize: 0x14 }
+  - { offset: 0x986, size: 0x8, addend: 0x0, symName: '_$sSa12_endMutationyyF', symObjAddr: 0xC78, symBinAddr: 0x2214, symSize: 0xC }
+  - { offset: 0x9D5, size: 0x8, addend: 0x0, symName: '_$s16TaxiwayCoreTests0076$s16TaxiwayCoreTests13packageBuilds4TestfMp_20__$5a5eb7a2ee84e7a1fMu__nAHHEeO19__testContentRecords6UInt32V4kind_AF9reserved1SbSv_S2VSgSutXCSg8accessorSu7contextSu9reserved2tvgZ', symObjAddr: 0x9D8, symBinAddr: 0x1FDC, symSize: 0x40 }
+  - { offset: 0x9FB, size: 0x8, addend: 0x0, symName: '_$s16TaxiwayCoreTests0076$s16TaxiwayCoreTests13packageBuilds4TestfMp_20__$5a5eb7a2ee84e7a1fMu__nAHHEeO7Testing28__TestContentRecordContainerAadEP06__testfG0s6UInt32V4kind_AI9reserved1SbSv_S2VSgSutXCSg8accessorSu7contextSu9reserved2tvgZTW', symObjAddr: 0xA18, symBinAddr: 0x201C, symSize: 0x64 }
+  - { offset: 0xA17, size: 0x8, addend: 0x0, symName: '_$ss27_finalizeUninitializedArrayySayxGABnlF', symObjAddr: 0xC38, symBinAddr: 0x21D4, symSize: 0x40 }
+...

@@ -1,0 +1,12 @@
+{
+  "": {
+    "swift-dependencies": "/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCoreTests.build/master.swiftdeps"
+  },
+  "/Users/ruby/GitRepos/Taxiway/TaxiwayCore/Tests/TaxiwayCoreTests/TaxiwayCoreTests.swift": {
+    "dependencies": "/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCoreTests.build/TaxiwayCoreTests.d",
+    "object": "/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCoreTests.build/TaxiwayCoreTests.swift.o",
+    "swiftmodule": "/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCoreTests.build/TaxiwayCoreTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCoreTests.build/TaxiwayCoreTests.swiftdeps",
+    "diagnostics": "/Users/ruby/GitRepos/Taxiway/TaxiwayCore/.build/arm64-apple-macosx/debug/TaxiwayCoreTests.build/TaxiwayCoreTests.dia"
+  }
+}
