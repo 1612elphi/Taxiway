@@ -104,6 +104,9 @@
 			productRefGroup = 9BC0F82F2F536A7B00E614D5 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
+			packages = (
+				9BC0F8402F536B0000E614D5 /* XCLocalSwiftPackageReference "TaxiwayCore" */,
+			);
 			targets = (
 				9BC0F82D2F536A7B00E614D5 /* Taxiway */,
 			);
