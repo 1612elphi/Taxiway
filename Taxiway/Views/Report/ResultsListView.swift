@@ -16,7 +16,7 @@ struct ResultsListView: View {
                     .frame(width: 10, height: 10)
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(result.checkTypeID)
+                    Text(CheckMetadata.displayName(for: result.checkTypeID))
                         .font(TaxiwayTheme.monoSmall)
                         .lineLimit(1)
                     Text(result.message)

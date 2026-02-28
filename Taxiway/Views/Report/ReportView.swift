@@ -29,7 +29,7 @@ struct ReportView: View {
                 .navigationSplitViewColumnWidth(min: 240, ideal: 280, max: 360)
             } detail: {
                 if let selected = selectedResult {
-                    ResultDetailView(result: selected)
+                    ResultDetailView(result: selected, pdfURL: report.documentURL)
                 } else {
                     ContentUnavailableView(
                         "Select a Check",

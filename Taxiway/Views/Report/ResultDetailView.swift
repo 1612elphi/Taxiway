@@ -3,63 +3,87 @@ import TaxiwayCore
 
 struct ResultDetailView: View {
     let result: CheckResult
+    let pdfURL: URL?
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: TaxiwayTheme.sectionSpacing) {
-                // Status badge and type ID
-                HStack(spacing: 10) {
-                    statusBadge
-                    Text(result.checkTypeID)
-                        .font(TaxiwayTheme.monoLarge)
-                }
+        VSplitView {
+            PDFPreviewView(
+                pdfURL: pdfURL,
+                affectedItems: result.affectedItems,
+                highlightColor: highlightColor
+            )
+            .frame(minHeight: 200)
 
-                // Severity
-                HStack(spacing: 6) {
-                    Text("Severity:")
-                        .font(TaxiwayTheme.monoSmall)
-                        .foregroundStyle(.secondary)
-                    Text(severityLabel)
-                        .font(TaxiwayTheme.monoSmall)
-                        .foregroundStyle(severityColor)
-                }
-
-                // Message
-                Text(result.message)
-                    .font(TaxiwayTheme.monoFont)
-
-                // Detail
-                if let detail = result.detail {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Detail")
-                            .font(TaxiwayTheme.monoSmall)
-                            .foregroundStyle(.secondary)
-                        Text(detail)
-                            .font(TaxiwayTheme.monoFont)
-                            .textSelection(.enabled)
+            ScrollView {
+                VStack(alignment: .leading, spacing: TaxiwayTheme.sectionSpacing) {
+                    // Status badge and check name
+                    HStack(spacing: 10) {
+                        statusBadge
+                        Text(CheckMetadata.displayName(for: result.checkTypeID))
+                            .font(TaxiwayTheme.monoLarge)
                     }
-                }
 
-                // Affected items
-                if !result.affectedItems.isEmpty {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Affected Items")
+                    // Severity
+                    HStack(spacing: 6) {
+                        Text("Severity:")
                             .font(TaxiwayTheme.monoSmall)
                             .foregroundStyle(.secondary)
+                        Text(severityLabel)
+                            .font(TaxiwayTheme.monoSmall)
+                            .foregroundStyle(severityColor)
+                    }
 
-                        ForEach(Array(result.affectedItems.enumerated()), id: \.offset) { _, item in
-                            Text(descriptionFor(item))
+                    // Message
+                    Text(result.message)
+                        .font(TaxiwayTheme.monoFont)
+
+                    // Detail
+                    if let detail = result.detail {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Detail")
+                                .font(TaxiwayTheme.monoSmall)
+                                .foregroundStyle(.secondary)
+                            Text(detail)
                                 .font(TaxiwayTheme.monoFont)
+                                .textSelection(.enabled)
                         }
                     }
-                }
 
-                Spacer()
+                    // Affected items
+                    if !result.affectedItems.isEmpty {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Affected Items")
+                                .font(TaxiwayTheme.monoSmall)
+                                .foregroundStyle(.secondary)
+
+                            ForEach(Array(result.affectedItems.enumerated()), id: \.offset) { _, item in
+                                Text(descriptionFor(item))
+                                    .font(TaxiwayTheme.monoFont)
+                            }
+                        }
+                    }
+
+                    Spacer()
+                }
+                .padding(TaxiwayTheme.panelPadding)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .padding(TaxiwayTheme.panelPadding)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(minHeight: 150)
         }
     }
+
+    // MARK: - Highlight color
+
+    private var highlightColor: Color {
+        switch result.status {
+        case .fail: TaxiwayTheme.statusError
+        case .warning: TaxiwayTheme.statusWarning
+        case .pass: TaxiwayTheme.statusPass
+        case .skipped: TaxiwayTheme.statusSkipped
+        }
+    }
+
+    // MARK: - Status badge
 
     @ViewBuilder
     private var statusBadge: some View {
@@ -81,6 +105,8 @@ struct ResultDetailView: View {
         }
     }
 
+    // MARK: - Severity
+
     private var severityLabel: String {
         switch result.severity {
         case .error: "Error"
@@ -96,6 +122,8 @@ struct ResultDetailView: View {
         case .info: .secondary
         }
     }
+
+    // MARK: - Affected item description
 
     private func descriptionFor(_ item: AffectedItem) -> String {
         switch item {
