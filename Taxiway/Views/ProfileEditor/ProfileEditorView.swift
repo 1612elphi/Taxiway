@@ -6,6 +6,8 @@ struct ProfileEditorView: View {
     @Environment(\.dismiss) var dismiss
 
     @State private var editedProfile: PreflightProfile?
+    @State private var selectedCategory: CheckCategory? = .file
+    @State private var selectedCheckIndex: Int?
     @State private var saveError: String?
 
     private var isBuiltIn: Bool {
@@ -14,69 +16,15 @@ struct ProfileEditorView: View {
 
     var body: some View {
         Group {
-            if let profile = Binding($editedProfile) {
-                profileForm(profile: profile)
+            if editedProfile != nil {
+                editorContent()
             } else {
                 ContentUnavailableView("No Profile Selected", systemImage: "doc.questionmark")
             }
         }
-        .frame(minWidth: 500, minHeight: 400)
+        .frame(minWidth: 800, minHeight: 500)
         .onAppear {
             editedProfile = coordinator.editingProfile
-        }
-    }
-
-    // MARK: - Profile Form
-
-    @ViewBuilder
-    private func profileForm(profile: Binding<PreflightProfile>) -> some View {
-        Form {
-            Section("Profile") {
-                TextField("Name", text: profile.name)
-                    .disabled(isBuiltIn)
-                TextField("Description", text: profile.description)
-                    .disabled(isBuiltIn)
-                if isBuiltIn {
-                    Label("Built-in profiles are read-only.", systemImage: "lock.fill")
-                        .font(TaxiwayTheme.monoSmall)
-                        .foregroundStyle(.secondary)
-                }
-            }
-
-            Section("Checks") {
-                let grouped = groupedChecks(profile.wrappedValue.checks)
-                ForEach(grouped.keys.sorted(), id: \.self) { category in
-                    DisclosureGroup(category.capitalized) {
-                        let indices = grouped[category] ?? []
-                        ForEach(indices, id: \.self) { index in
-                            checkRow(profile: profile, index: index)
-                        }
-                    }
-                }
-            }
-
-            if isBuiltIn {
-                Section {
-                    Button("Duplicate Profile") {
-                        duplicateProfile()
-                    }
-                    .help("Create an editable copy of this built-in profile.")
-                }
-            }
-        }
-        .formStyle(.grouped)
-        .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button("Cancel") {
-                    dismiss()
-                }
-            }
-            ToolbarItem(placement: .confirmationAction) {
-                Button("Save") {
-                    saveProfile()
-                }
-                .disabled(isBuiltIn)
-            }
         }
         .alert("Save Failed", isPresented: Binding(
             get: { saveError != nil },
@@ -88,50 +36,181 @@ struct ProfileEditorView: View {
         }
     }
 
-    // MARK: - Check Row
+    // MARK: - Editor Content
 
     @ViewBuilder
-    private func checkRow(profile: Binding<PreflightProfile>, index: Int) -> some View {
-        let entry = profile.wrappedValue.checks[index]
+    private func editorContent() -> some View {
+        VStack(spacing: 0) {
+            titleBar()
+            Divider()
+            NavigationSplitView {
+                categoryList()
+                    .navigationSplitViewColumnWidth(min: 160, ideal: 180, max: 220)
+            } content: {
+                checkList()
+                    .navigationSplitViewColumnWidth(min: 200, ideal: 240, max: 300)
+            } detail: {
+                detailPane()
+            }
+            .navigationSplitViewStyle(.balanced)
+        }
+    }
+
+    // MARK: - Title Bar
+
+    @ViewBuilder
+    private func titleBar() -> some View {
         HStack {
-            Toggle(isOn: profile.checks[index].enabled) {
-                Text(entry.typeID)
+            if isBuiltIn {
+                Image(systemName: "lock.fill")
+                    .foregroundStyle(.secondary)
                     .font(TaxiwayTheme.monoSmall)
             }
-            .disabled(isBuiltIn)
-
+            Text(editedProfile?.name ?? "Profile")
+                .font(TaxiwayTheme.monoTitle)
             Spacer()
-
-            Picker("Severity", selection: profile.checks[index].severityOverride) {
-                Text("Default").tag(CheckSeverity?.none)
-                ForEach(CheckSeverity.allCases, id: \.self) { severity in
-                    Text(severityLabel(severity)).tag(CheckSeverity?.some(severity))
+            if isBuiltIn {
+                Button("Duplicate") {
+                    duplicateProfile()
                 }
             }
-            .labelsHidden()
-            .frame(width: 100)
+            Button("Cancel", role: .cancel) {
+                dismiss()
+            }
+            Button("Save") {
+                saveProfile()
+            }
             .disabled(isBuiltIn)
+            .buttonStyle(.borderedProminent)
+        }
+        .padding(.horizontal, TaxiwayTheme.panelPadding)
+        .padding(.vertical, 10)
+    }
+
+    // MARK: - Category List (Left Column)
+
+    @ViewBuilder
+    private func categoryList() -> some View {
+        List(CheckCategory.allCases, id: \.self, selection: $selectedCategory) { category in
+            let counts = checkCounts(for: category)
+            HStack {
+                Text(categoryLabel(category))
+                    .font(TaxiwayTheme.monoFont)
+                Spacer()
+                Text("\(counts.enabled)/\(counts.total)")
+                    .font(TaxiwayTheme.monoSmall)
+                    .foregroundStyle(.secondary)
+            }
+            .tag(category)
+        }
+        .listStyle(.sidebar)
+        .onChange(of: selectedCategory) { _, _ in
+            selectedCheckIndex = nil
+        }
+    }
+
+    // MARK: - Check List (Middle Column)
+
+    @ViewBuilder
+    private func checkList() -> some View {
+        if let category = selectedCategory, let profile = editedProfile {
+            let indices = checksIndices(for: category, in: profile)
+            List(indices, id: \.self, selection: $selectedCheckIndex) { index in
+                let entry = profile.checks[index]
+                HStack(spacing: 8) {
+                    Circle()
+                        .fill(severityColor(for: entry))
+                        .frame(width: 8, height: 8)
+                    Text(CheckMetadata.displayName(for: entry.typeID))
+                        .font(TaxiwayTheme.monoSmall)
+                        .lineLimit(1)
+                    Spacer()
+                    if !entry.enabled {
+                        Text("OFF")
+                            .font(.system(.caption2, design: .monospaced, weight: .bold))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 1)
+                            .background(Capsule().fill(.secondary))
+                    }
+                }
+                .tag(index)
+            }
+            .listStyle(.plain)
+        } else {
+            ContentUnavailableView("Select a Category", systemImage: "sidebar.left")
+        }
+    }
+
+    // MARK: - Detail Pane (Right Column)
+
+    @ViewBuilder
+    private func detailPane() -> some View {
+        if let index = selectedCheckIndex,
+           let profile = editedProfile,
+           index < profile.checks.count {
+            CheckDetailView(
+                entry: Binding(
+                    get: {
+                        guard let p = editedProfile, index < p.checks.count else {
+                            return CheckEntry(typeID: "", enabled: false, parametersJSON: Data())
+                        }
+                        return p.checks[index]
+                    },
+                    set: { newValue in
+                        editedProfile?.checks[index] = newValue
+                    }
+                ),
+                readOnly: isBuiltIn
+            )
+        } else {
+            ContentUnavailableView("Select a Check", systemImage: "checkmark.circle")
         }
     }
 
     // MARK: - Helpers
 
-    private func groupedChecks(_ checks: [CheckEntry]) -> [String: [Int]] {
-        var result: [String: [Int]] = [:]
-        for (index, check) in checks.enumerated() {
-            let category = String(check.typeID.prefix(while: { $0 != "." }))
-            result[category, default: []].append(index)
+    private func checksIndices(for category: CheckCategory, in profile: PreflightProfile) -> [Int] {
+        profile.checks.enumerated().compactMap { index, entry in
+            CheckMetadata.category(for: entry.typeID) == category ? index : nil
         }
-        return result
     }
 
-    private func severityLabel(_ severity: CheckSeverity) -> String {
+    private func checkCounts(for category: CheckCategory) -> (enabled: Int, total: Int) {
+        guard let profile = editedProfile else { return (0, 0) }
+        let indices = checksIndices(for: category, in: profile)
+        let enabled = indices.filter { profile.checks[$0].enabled }.count
+        return (enabled, indices.count)
+    }
+
+    private func severityColor(for entry: CheckEntry) -> Color {
+        let severity = entry.severityOverride ?? defaultSeverity(for: entry.typeID)
         switch severity {
-        case .error: "Error"
-        case .warning: "Warning"
-        case .info: "Info"
+        case .error: return TaxiwayTheme.statusError
+        case .warning: return TaxiwayTheme.statusWarning
+        case .info: return .blue
         }
     }
+
+    private func defaultSeverity(for typeID: String) -> CheckSeverity {
+        // Fallback — used only for the coloured dot
+        .warning
+    }
+
+    private func categoryLabel(_ category: CheckCategory) -> String {
+        switch category {
+        case .file: "File"
+        case .pdf: "PDF"
+        case .pages: "Pages"
+        case .marks: "Marks"
+        case .colour: "Colour"
+        case .fonts: "Fonts"
+        case .images: "Images"
+        case .lines: "Lines"
+        }
+    }
+
+    // MARK: - Actions
 
     private func duplicateProfile() {
         guard let original = editedProfile else { return }

@@ -109,7 +109,7 @@ struct ResultDetailView: View {
             "Image \(id) (page \(page + 1))"
         case .colourSpace(let name, let pages):
             "Colour space: \(name) (pages \(pages.map { String($0 + 1) }.joined(separator: ", ")))"
-        case .annotation(let type, let page):
+        case .annotation(let type, let page, _):
             "\(type) annotation (page \(page + 1))"
         }
     }
