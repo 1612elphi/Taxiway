@@ -9,7 +9,7 @@ public enum ProfileOrigin: String, Codable, Sendable, Equatable {
 }
 
 /// A named collection of check entries that defines what a preflight run should verify.
-public struct PreflightProfile: Codable, Sendable, Equatable, Identifiable {
+public struct PreflightProfile: Codable, Sendable, Equatable, Identifiable, Hashable {
     public let id: UUID
     public var name: String
     public var description: String
@@ -22,6 +22,10 @@ public struct PreflightProfile: Codable, Sendable, Equatable, Identifiable {
         self.description = description
         self.origin = origin
         self.checks = checks
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
     }
 
     /// Creates a user-owned copy of this profile with a new name and ID.
