@@ -17,10 +17,18 @@ struct AnnotationExtractor: Sendable {
                 let subtypeStr = annotation.type ?? "Unknown"
                 let annotationType = mapAnnotationType(subtypeStr)
 
+                let rect = annotation.bounds
+                let annotBounds = AnnotationBounds(
+                    x: rect.origin.x,
+                    y: rect.origin.y,
+                    width: rect.size.width,
+                    height: rect.size.height
+                )
                 annotations.append(AnnotationInfo(
                     type: annotationType,
                     pageIndex: i,
-                    subtype: subtypeStr
+                    subtype: subtypeStr,
+                    bounds: annotBounds
                 ))
             }
         }
