@@ -8,9 +8,13 @@ public struct DocumentInfo: Codable, Sendable, Equatable {
     public let isTagged: Bool
     public let hasLayers: Bool
     public let transparencyDetected: Bool
+    public let hasEmbeddedFiles: Bool
+    public let hasJavaScript: Bool
+    public let outputIntentIdentifier: String?
 
     public init(pdfVersion: String, producer: String?, creator: String?, isLinearized: Bool, isTagged: Bool, hasLayers: Bool,
-                transparencyDetected: Bool = false) {
+                transparencyDetected: Bool = false, hasEmbeddedFiles: Bool = false, hasJavaScript: Bool = false,
+                outputIntentIdentifier: String? = nil) {
         self.pdfVersion = pdfVersion
         self.producer = producer
         self.creator = creator
@@ -18,5 +22,8 @@ public struct DocumentInfo: Codable, Sendable, Equatable {
         self.isTagged = isTagged
         self.hasLayers = hasLayers
         self.transparencyDetected = transparencyDetected
+        self.hasEmbeddedFiles = hasEmbeddedFiles
+        self.hasJavaScript = hasJavaScript
+        self.outputIntentIdentifier = outputIntentIdentifier
     }
 }

@@ -104,6 +104,9 @@ public struct PDFDocumentParser: Sendable {
         let isTagged = checkTagged(pdfDoc: pdfDoc)
         let hasLayers = checkLayers(pdfDoc: pdfDoc)
         let transparencyDetected = checkTransparency(pdfDoc: pdfDoc)
+        let hasEmbeddedFiles = checkEmbeddedFiles(pdfDoc: pdfDoc)
+        let hasJavaScript = checkJavaScript(pdfDoc: pdfDoc)
+        let outputIntentIdentifier = extractOutputIntent(pdfDoc: pdfDoc)
 
         return DocumentInfo(
             pdfVersion: pdfVersion,
@@ -112,7 +115,10 @@ public struct PDFDocumentParser: Sendable {
             isLinearized: isLinearized,
             isTagged: isTagged,
             hasLayers: hasLayers,
-            transparencyDetected: transparencyDetected
+            transparencyDetected: transparencyDetected,
+            hasEmbeddedFiles: hasEmbeddedFiles,
+            hasJavaScript: hasJavaScript,
+            outputIntentIdentifier: outputIntentIdentifier
         )
     }
 
@@ -344,5 +350,66 @@ public struct PDFDocumentParser: Sendable {
 
         var ocPropsDict: CGPDFDictionaryRef?
         return CGPDFDictionaryGetDictionary(catalog, "OCProperties", &ocPropsDict)
+    }
+
+    private func checkEmbeddedFiles(pdfDoc: PDFDocument) -> Bool {
+        guard let cgDoc = pdfDoc.documentRef else { return false }
+        guard let catalog = cgDoc.catalog else { return false }
+
+        var namesDict: CGPDFDictionaryRef?
+        guard CGPDFDictionaryGetDictionary(catalog, "Names", &namesDict),
+              let names = namesDict else { return false }
+
+        var embeddedFilesDict: CGPDFDictionaryRef?
+        return CGPDFDictionaryGetDictionary(names, "EmbeddedFiles", &embeddedFilesDict)
+    }
+
+    private func checkJavaScript(pdfDoc: PDFDocument) -> Bool {
+        guard let cgDoc = pdfDoc.documentRef else { return false }
+        guard let catalog = cgDoc.catalog else { return false }
+
+        // Check Names → JavaScript name tree
+        var namesDict: CGPDFDictionaryRef?
+        if CGPDFDictionaryGetDictionary(catalog, "Names", &namesDict), let names = namesDict {
+            var jsDict: CGPDFDictionaryRef?
+            if CGPDFDictionaryGetDictionary(names, "JavaScript", &jsDict) {
+                return true
+            }
+        }
+
+        // Check OpenAction for JavaScript type
+        var openActionDict: CGPDFDictionaryRef?
+        if CGPDFDictionaryGetDictionary(catalog, "OpenAction", &openActionDict), let openAction = openActionDict {
+            var sName: UnsafePointer<CChar>?
+            if CGPDFDictionaryGetName(openAction, "S", &sName), let s = sName {
+                if String(cString: s) == "JavaScript" {
+                    return true
+                }
+            }
+        }
+
+        return false
+    }
+
+    private func extractOutputIntent(pdfDoc: PDFDocument) -> String? {
+        guard let cgDoc = pdfDoc.documentRef else { return nil }
+        guard let catalog = cgDoc.catalog else { return nil }
+
+        var outputIntentsArray: CGPDFArrayRef?
+        guard CGPDFDictionaryGetArray(catalog, "OutputIntents", &outputIntentsArray),
+              let intents = outputIntentsArray else { return nil }
+
+        guard CGPDFArrayGetCount(intents) > 0 else { return nil }
+
+        var intentDict: CGPDFDictionaryRef?
+        guard CGPDFArrayGetDictionary(intents, 0, &intentDict),
+              let intent = intentDict else { return nil }
+
+        var pdfString: CGPDFStringRef?
+        guard CGPDFDictionaryGetString(intent, "OutputConditionIdentifier", &pdfString),
+              let str = pdfString,
+              let cfStr = CGPDFStringCopyTextString(str) else { return nil }
+
+        return cfStr as String
     }
 }

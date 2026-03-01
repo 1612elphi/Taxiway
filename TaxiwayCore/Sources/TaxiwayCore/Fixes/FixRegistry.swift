@@ -48,11 +48,46 @@ public struct FixRegistry: Sendable {
             category: .ghostscript
         ),
         FixDescriptor(
+            id: "fix.convert_rich_black",
+            name: "Convert Rich Black",
+            description: "Re-distills through Ghostscript CMYK conversion to replace registration and heavy rich black with K-only.",
+            addressesCheckTypeIDs: ["colour.rich_black"],
+            category: .ghostscript
+        ),
+        FixDescriptor(
+            id: "fix.limit_ink_coverage",
+            name: "Limit Ink Coverage",
+            description: "Re-distills through Ghostscript CMYK conversion to reduce total ink coverage.",
+            addressesCheckTypeIDs: ["colour.ink_coverage"],
+            category: .ghostscript
+        ),
+        FixDescriptor(
             id: "fix.remove_annotations",
             name: "Remove Annotations",
             description: "Removes all annotations (comments, sticky notes, markup) using PDFKit.",
             addressesCheckTypeIDs: ["pdf.annotations"],
             category: .pdfkit
+        ),
+        FixDescriptor(
+            id: "fix.flatten_alpha",
+            name: "Flatten Alpha",
+            description: "Flattens alpha channels in images by compositing onto white via Ghostscript transparency flattening.",
+            addressesCheckTypeIDs: ["images.alpha"],
+            category: .ghostscript
+        ),
+        FixDescriptor(
+            id: "fix.flatten_layers",
+            name: "Flatten Layers",
+            description: "Flattens all optional content groups (layers) into a single layer using Ghostscript.",
+            addressesCheckTypeIDs: ["pdf.layers"],
+            category: .ghostscript
+        ),
+        FixDescriptor(
+            id: "fix.assign_default_icc",
+            name: "Assign Default ICC",
+            description: "Assigns default ICC profiles to untagged images via Ghostscript CMYK conversion.",
+            addressesCheckTypeIDs: ["images.icc_missing"],
+            category: .ghostscript
         ),
 
         // Proactive fixes (available as tools regardless of check results)

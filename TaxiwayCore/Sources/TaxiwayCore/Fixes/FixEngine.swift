@@ -130,7 +130,11 @@ public struct FixEngine: Sendable {
 
         // --- Reactive fix arguments ---
 
-        if fixIDs.contains("fix.convert_cmyk") {
+        // CMYK conversion — shared by convert_cmyk, convert_rich_black, limit_ink_coverage, assign_default_icc
+        let cmykConversionFixes: Set<String> = [
+            "fix.convert_cmyk", "fix.convert_rich_black", "fix.limit_ink_coverage", "fix.assign_default_icc",
+        ]
+        if !cmykConversionFixes.isDisjoint(with: fixIDs) {
             args.append(contentsOf: [
                 "-dColorConversionStrategy=/CMYK",
                 "-dProcessColorModel=/DeviceCMYK",
@@ -155,10 +159,19 @@ public struct FixEngine: Sendable {
             ])
         }
 
-        if fixIDs.contains("fix.flatten_transparency") {
+        // Transparency flattening — shared by flatten_transparency and flatten_alpha
+        let transparencyFixes: Set<String> = ["fix.flatten_transparency", "fix.flatten_alpha"]
+        if !transparencyFixes.isDisjoint(with: fixIDs) {
             args.append(contentsOf: [
                 "-dHaveTransparency=false",
                 "-dCompatibilityLevel=1.4",
+            ])
+        }
+
+        if fixIDs.contains("fix.flatten_layers") {
+            args.append(contentsOf: [
+                "-dCompatibilityLevel=1.4",
+                "-dPreserveOCProperties=false",
             ])
         }
 

@@ -12,6 +12,8 @@ extension CheckRegistry {
         registry.register(InteractiveElementsCheck.self)
         registry.register(MetadataFieldMatchesCheck.self)
         registry.register(MetadataFieldPresentCheck.self)
+        registry.register(EmbeddedFilesCheck.self)
+        registry.register(JavaScriptCheck.self)
 
         // Colour
         registry.register(ColourSpaceUsedCheck.self)
@@ -72,6 +74,7 @@ extension CheckRegistry {
         registry.register(PDFVersionCheck.self)
         registry.register(TaggedCheck.self)
         registry.register(TransparencyCheck.self)
+        registry.register(OutputIntentCheck.self)
 
         return registry
     }
