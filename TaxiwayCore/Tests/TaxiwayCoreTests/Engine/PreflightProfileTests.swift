@@ -47,9 +47,9 @@ struct PreflightProfileTests {
         #expect(PreflightProfile.loose.origin == .builtIn)
     }
 
-    @Test("allBuiltIn contains exactly 4 profiles")
+    @Test("allBuiltIn contains exactly 10 profiles")
     func allBuiltInCount() {
-        #expect(PreflightProfile.allBuiltIn.count == 4)
+        #expect(PreflightProfile.allBuiltIn.count == 10)
     }
 
     @Test("PDF/X-1a has fonts.not_embedded check enabled")

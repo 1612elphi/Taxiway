@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Taxiway — Your PDFs, Cleared for Takeoff</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap');
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0d0c0a;
+  --bg-alt: #111010;
+  --amber: #d4952a;
+  --amber-dim: #9e7322;
+  --amber-glow: rgba(212, 149, 42, 0.12);
+  --amber-bright: #edb44a;
+  --green: #3ddc84;
+  --red: #ff5252;
+  --orange: #e88a30;
+  --cream: #e8dcc8;
+  --cream-60: rgba(232, 220, 200, 0.6);
+  --cream-35: rgba(232, 220, 200, 0.35);
+  --cream-15: rgba(232, 220, 200, 0.15);
+  --cream-08: rgba(232, 220, 200, 0.08);
+  --blue: #5b8fa8;
+  --blue-dim: rgba(91, 143, 168, 0.15);
+  --blue-line: rgba(91, 143, 168, 0.12);
+  --mono: 'JetBrains Mono', 'SF Mono', monospace;
+  --serif: 'Instrument Serif', 'Georgia', serif;
+  /* solari */
+  --flap-top: #2a2825;
+  --flap-bot: #1f1e1b;
+  --flap-frame: #161513;
+  --split-line: rgba(0,0,0,0.9);
+}
+
+html { scroll-behavior: smooth; background: var(--bg); color: var(--cream); -webkit-font-smoothing: antialiased; }
+body { overflow-x: hidden; font-family: var(--mono); font-size: 16px; }
+
+/* ═══════ BLUEPRINT GRID (global background) ═══════ */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background-image:
+    linear-gradient(var(--blue-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--blue-line) 1px, transparent 1px);
+  background-size: 80px 80px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black 0%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black 0%, transparent 100%);
+}
+
+.wrap { max-width: 960px; margin: 0 auto; padding: 0 2.5rem; }
+
+/* ═══════ CROP MARKS ═══════ */
+.crop-section {
+  position: relative;
+  padding: 3.5rem 0;
+}
+
+.crop-section::before,
+.crop-section::after {
+  content: '';
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-color: var(--cream-15);
+  border-style: solid;
+}
+
+.crop-section::before {
+  top: 8px;
+  left: -8px;
+  border-width: 1px 0 0 1px;
+}
+
+.crop-section::after {
+  bottom: 8px;
+  right: -8px;
+  border-width: 0 1px 1px 0;
+}
+
+/* ═══════ REGISTRATION MARK ═══════ */
+.reg-mark {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--cream-15);
+  border-radius: 50%;
+  position: relative;
+  vertical-align: middle;
+}
+
+.reg-mark::before, .reg-mark::after {
+  content: '';
+  position: absolute;
+  background: var(--cream-15);
+}
+
+.reg-mark::before {
+  width: 1px;
+  height: 100%;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+}
+
+.reg-mark::after {
+  width: 100%;
+  height: 1px;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+}
+
+/* ═══════ TYPOGRAPHY ═══════ */
+.label {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--amber-dim);
+}
+
+h2 {
+  font-family: var(--serif);
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 400;
+  line-height: 1.2;
+  color: var(--cream);
+  margin-bottom: 0.5rem;
+}
+
+.copy {
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  font-weight: 300;
+  line-height: 1.7;
+  color: var(--cream-60);
+  max-width: 580px;
+}
+
+.copy strong { color: var(--cream); font-weight: 500; }
+
+/* ═══════════════════ HERO ═══════════════════ */
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 5rem 0 2rem;
+  position: relative;
+}
+
+.hero-tagline {
+  font-family: var(--serif);
+  font-size: clamp(2.4rem, 6vw, 4.2rem);
+  color: var(--cream);
+  margin-bottom: 0.6rem;
+  line-height: 1.15;
+  width: 100%;
+  max-width: 960px;
+  padding: 0 2.5rem;
+  text-align: left;
+}
+
+.hero-sub {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  font-weight: 300;
+  color: var(--cream-60);
+  margin-bottom: 2rem;
+  max-width: 960px;
+  width: 100%;
+  padding: 0 2.5rem;
+  text-align: left;
+  line-height: 1.5;
+}
+
+/* ═══════════════════ SOLARI BOARD (preserved) ═══════════════════ */
+.solari-board {
+  display: inline-flex;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--flap-frame);
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.03);
+  margin-bottom: 2.5rem;
+}
+
+.solari-char {
+  width: clamp(52px, 8.5vw, 76px);
+  height: clamp(72px, 11vw, 104px);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.solari-half {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.solari-half.top {
+  border-radius: 6px 6px 2px 2px;
+  background: linear-gradient(180deg, var(--flap-top) 0%, #252420 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 1px 0 var(--split-line);
+}
+
+.solari-half.bot {
+  border-radius: 2px 2px 6px 6px;
+  background: linear-gradient(180deg, #222120 0%, var(--flap-bot) 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+}
+
+.solari-letter {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: clamp(2.2rem, 5.5vw, 3.8rem);
+  color: var(--amber);
+  text-shadow: 0 0 18px var(--amber-glow);
+  position: absolute;
+  left: 50%;
+  user-select: none;
+}
+
+.solari-half.top .solari-letter { top: 100%; transform: translate(-50%, -50%); }
+.solari-half.bot .solari-letter { top: 0%; transform: translate(-50%, -50%); }
+
+.hero-row {
+  width: 100%;
+  max-width: 960px;
+  padding: 0 2.5rem;
+  text-align: left;
+}
+
+/* ═══════════════════ CTA ═══════════════════ */
+.cta-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  width: 100%;
+  max-width: 960px;
+  padding: 0 2.5rem;
+}
+
+.btn {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.85rem 2rem;
+  border-radius: 5px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+
+.btn-amber {
+  background: var(--amber);
+  color: var(--bg);
+  border-color: var(--amber);
+}
+
+.btn-amber:hover {
+  background: var(--amber-bright);
+  border-color: var(--amber-bright);
+  box-shadow: 0 0 24px var(--amber-glow);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--cream-60);
+  border-color: var(--cream-15);
+}
+
+.btn-outline:hover { border-color: var(--amber-dim); color: var(--amber); }
+
+.fine-print {
+  font-size: 0.65rem;
+  color: var(--cream-35);
+  letter-spacing: 0.1em;
+  margin-top: 1rem;
+  width: 100%;
+  max-width: 960px;
+  padding: 0 2.5rem;
+  text-align: left;
+}
+
+/* ═══════════════════ DIVIDER ═══════════════════ */
+.divider {
+  border: none;
+  border-top: 1px solid var(--cream-08);
+  margin: 0;
+}
+
+/* ═══════════════════ STATS BAR ═══════════════════ */
+.stat-bar {
+  display: flex;
+  justify-content: space-between;
+  padding: 2.5rem 0;
+  border-top: 1px solid var(--cream-08);
+  border-bottom: 1px solid var(--cream-08);
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.stat {
+  text-align: center;
+  flex: 1;
+  min-width: 80px;
+}
+
+.stat-n {
+  font-family: var(--mono);
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--amber);
+  line-height: 1;
+}
+
+.stat-l {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--cream-35);
+  margin-top: 0.4rem;
+}
+
+/* ═══════════════════ FEATURES ═══════════════════ */
+.features { padding: 3.5rem 0; }
+
+.feat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--cream-08);
+  border: 1px solid var(--cream-08);
+  margin-top: 1.5rem;
+}
+
+@media (max-width: 640px) { .feat-grid { grid-template-columns: 1fr; } }
+
+.feat {
+  background: var(--bg);
+  padding: 1.8rem 1.6rem;
+  position: relative;
+}
+
+.feat::before {
+  content: attr(data-n);
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  color: var(--cream-15);
+  position: absolute;
+  top: 0.8rem;
+  right: 0.8rem;
+}
+
+.feat h3 {
+  font-family: var(--serif);
+  font-size: 1.25rem;
+  font-weight: 400;
+  color: var(--cream);
+  margin-bottom: 0.4rem;
+}
+
+.feat p {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  font-weight: 300;
+  line-height: 1.65;
+  color: var(--cream-60);
+}
+
+.feat-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.6rem;
+}
+
+.ft {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--blue-dim);
+  border-radius: 2px;
+  color: var(--blue);
+}
+
+/* ═══════════════════ PROFILES ═══════════════════ */
+.profiles { padding: 3.5rem 0; }
+
+.prof-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 1rem;
+}
+
+.prof {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 400;
+  padding: 0.5rem 0.85rem;
+  border: 1px solid var(--cream-08);
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--cream-60);
+  transition: border-color 0.2s;
+}
+
+.prof:hover { border-color: var(--cream-15); }
+
+.prof-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 1px;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════ FIX SYSTEM ═══════════════════ */
+.fixes { padding: 3.5rem 0; }
+
+.fix-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.4rem;
+  margin-top: 1rem;
+}
+
+.fix {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 300;
+  color: var(--cream-60);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 3px;
+  border: 1px solid var(--cream-08);
+}
+
+.fix-d {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.fix-d.re { background: var(--orange); }
+.fix-d.pr { background: var(--green); }
+
+.fix-note {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  font-weight: 300;
+  line-height: 1.7;
+  color: var(--cream-60);
+  margin-top: 1rem;
+  max-width: 560px;
+}
+
+/* ═══════════════════ OPEN SOURCE ═══════════════════ */
+.oss { padding: 3.5rem 0; }
+
+.oss-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.5rem;
+  align-items: start;
+  margin-top: 1.2rem;
+}
+
+@media (max-width: 700px) { .oss-cols { grid-template-columns: 1fr; } }
+
+.term {
+  background: #0a0a08;
+  border: 1px solid var(--cream-08);
+  border-radius: 6px;
+  overflow: hidden;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  line-height: 1.7;
+}
+
+.term-bar {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0.5rem 0.8rem;
+  background: #141412;
+  border-bottom: 1px solid var(--cream-08);
+}
+
+.td { width: 8px; height: 8px; border-radius: 50%; }
+.td.r { background: #ff5f57; }
+.td.y { background: #ffbd2e; }
+.td.g { background: #28c840; }
+
+.term-t { font-size: 0.65rem; color: var(--cream-35); margin-left: auto; }
+
+.term-body { padding: 0.9rem 1rem; }
+.term-body .cm { color: #555; }
+.term-body .pr { color: var(--green); }
+.term-body .vl { color: var(--cream); }
+.term-body .fl { color: var(--amber); }
+.term-body .ou { color: var(--cream-35); }
+.term-body .ok { color: var(--green); }
+
+/* ═══════════════════ FOOTER ═══════════════════ */
+footer {
+  padding: 3rem 0;
+  text-align: center;
+}
+
+@keyframes blink-alt {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.12; }
+}
+
+.f-lights {
+  display: inline-flex;
+  gap: 5px;
+  margin-bottom: 1rem;
+}
+
+.f-l { width: 6px; height: 6px; border-radius: 50%; }
+.f-l.g { background: var(--green); animation: blink-alt 1.4s ease-in-out infinite; }
+.f-l.a { background: var(--amber); animation: blink-alt 1.4s ease-in-out infinite 0.7s; }
+
+.f-brand {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--cream-35);
+  margin-bottom: 1rem;
+}
+
+.f-links {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  margin-bottom: 1.2rem;
+}
+
+.f-links a {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--cream-60);
+  text-decoration: none;
+  letter-spacing: 0.06em;
+  transition: color 0.2s;
+}
+
+.f-links a:hover { color: var(--amber); }
+
+.f-copy {
+  font-size: 0.6rem;
+  color: var(--cream-15);
+  letter-spacing: 0.1em;
+}
+
+/* ═══════════════════ REVEAL ═══════════════════ */
+.rv {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.rv.vis { opacity: 1; transform: translateY(0); }
+
+@media (max-width: 600px) {
+  .solari-board { gap: 4px; padding: 8px 10px; }
+  .cta-row { flex-direction: column; }
+  .stat-bar { flex-direction: column; align-items: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════ HERO ════════════════════════════ -->
+<section class="hero">
+  <div class="hero-row"><div class="solari-board" id="solari-board"></div></div>
+
+  <p class="hero-tagline">Your PDFs, cleared for takeoff.</p>
+  <p class="hero-sub">
+    The PDF inspector your print shop wishes you had.
+    55 checks. 14 fixes. Native macOS. Free forever.
+  </p>
+
+  <div class="cta-row">
+    <a href="#download" class="btn btn-amber">Download for Mac</a>
+    <a href="#oss" class="btn btn-outline">View Source</a>
+  </div>
+
+  <p class="fine-print">macOS 26+ &middot; Apple Silicon native &middot; No subscription &middot; No account</p>
+</section>
+
+<div class="wrap">
+
+<!-- ════════════════════════════ STATS ════════════════════════════ -->
+<div class="stat-bar rv">
+  <div class="stat"><div class="stat-n" data-to="55">0</div><div class="stat-l">Checks</div></div>
+  <div class="stat"><div class="stat-n" data-to="10">0</div><div class="stat-l">Profiles</div></div>
+  <div class="stat"><div class="stat-n" data-to="14">0</div><div class="stat-l">Fixes</div></div>
+  <div class="stat"><div class="stat-n" data-to="8">0</div><div class="stat-l">Categories</div></div>
+  <div class="stat"><div class="stat-n" data-to="0">0</div><div class="stat-l">Dependencies</div></div>
+  <div class="stat"><div class="stat-n" data-prefix="$" data-to="0">$0</div><div class="stat-l">Per year</div></div>
+</div>
+
+<!-- ════════════════════════════ FEATURES ════════════════════════════ -->
+<section class="crop-section features rv">
+  <div class="label">Capabilities</div>
+  <h2>Introducing the<br>rest of the toolkit.</h2>
+  <p class="copy">
+    Eight categories of checks — every one built because somebody,
+    somewhere, shipped a bad PDF and ruined somebody's Tuesday.
+  </p>
+
+  <div class="feat-grid">
+    <div class="feat" data-n="01">
+      <h3>Check Engine</h3>
+      <p>55 parametric checks across fonts, colour, images, marks, pages, metadata, transparency, and line art. Every threshold is configurable.</p>
+      <div class="feat-tags">
+        <span class="ft">Fonts</span><span class="ft">Colour</span><span class="ft">Images</span><span class="ft">Marks</span><span class="ft">Pages</span><span class="ft">PDF</span><span class="ft">File</span><span class="ft">Lines</span>
+      </div>
+    </div>
+    <div class="feat" data-n="02">
+      <h3>PDF Inspector</h3>
+      <p>Click a failed check. The offending object lights up on the page — images, fonts, annotations, colour spaces. No log files. No guessing.</p>
+    </div>
+    <div class="feat" data-n="03">
+      <h3>Automated Fixes</h3>
+      <p>10 reactive fixes triggered by failures, plus 4 proactive tools available anytime. Convert to CMYK, embed fonts, flatten transparency, add bleed.</p>
+    </div>
+    <div class="feat" data-n="04">
+      <h3>Profile Editor</h3>
+      <p>10 built-in profiles. Clone any of them, adjust every parameter, import and export as <span style="color:var(--amber-dim)">.taxiprofile</span> JSON.</p>
+    </div>
+    <div class="feat" data-n="05">
+      <h3>AI Content Audit</h3>
+      <p>Open-source GenAI metadata scanner. Detects AI-generated image markers and C2PA provenance credentials. The first of its kind.</p>
+    </div>
+    <div class="feat" data-n="06">
+      <h3>Export Anywhere</h3>
+      <p>Full reports in JSON, CSV, and formatted PDF. Every export includes the complete parsed document snapshot. Pick your poison.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ════════════════════════════ PROFILES ════════════════════════════ -->
+<section class="crop-section profiles rv">
+  <div class="label">Preflight Profiles</div>
+  <h2>Ten profiles.<br>Ten fewer decisions.</h2>
+  <p class="copy">
+    Press production to newsprint to archival to
+    "just tell me if this is broken." Or build your own.
+  </p>
+
+  <div class="prof-list">
+    <div class="prof"><div class="prof-dot" style="background:var(--red)"></div>PDF/X-1a</div>
+    <div class="prof"><div class="prof-dot" style="background:var(--red)"></div>PDF/X-3</div>
+    <div class="prof"><div class="prof-dot" style="background:var(--red)"></div>PDF/X-4</div>
+    <div class="prof"><div class="prof-dot" style="background:var(--orange)"></div>PDF/A-2b</div>
+    <div class="prof"><div class="prof-dot" style="background:var(--amber)"></div>Screen / Digital</div>
+    <div class="prof"><div class="prof-dot" style="background:var(--orange)"></div>Digital Print</div>
+    <div class="prof"><div class="prof-dot" style="background:var(--red)"></div>Newspaper</div>
+    <div class="prof"><div class="prof-dot" style="background:var(--amber)"></div>Large Format</div>
+    <div class="prof"><div class="prof-dot" style="background:var(--green)"></div>Loose</div>
+    <div class="prof"><div class="prof-dot" style="background:var(--red)"></div>AI Content Audit</div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ════════════════════════════ FIX SYSTEM ════════════════════════════ -->
+<section class="crop-section fixes rv">
+  <div class="label">The Fix System</div>
+  <h2>Don't just find problems.<br>Fix them.</h2>
+
+  <div class="fix-grid">
+    <div class="fix"><span class="fix-d re"></span>Convert to CMYK</div>
+    <div class="fix"><span class="fix-d re"></span>Embed Fonts</div>
+    <div class="fix"><span class="fix-d re"></span>Downsample Images</div>
+    <div class="fix"><span class="fix-d re"></span>Flatten Transparency</div>
+    <div class="fix"><span class="fix-d re"></span>Convert Rich Black</div>
+    <div class="fix"><span class="fix-d re"></span>Limit Ink Coverage</div>
+    <div class="fix"><span class="fix-d re"></span>Remove Annotations</div>
+    <div class="fix"><span class="fix-d re"></span>Flatten Alpha</div>
+    <div class="fix"><span class="fix-d re"></span>Flatten Layers</div>
+    <div class="fix"><span class="fix-d re"></span>Assign Default ICC</div>
+    <div class="fix"><span class="fix-d pr"></span>Add / Change Bleed</div>
+    <div class="fix"><span class="fix-d pr"></span>Change Page Size</div>
+    <div class="fix"><span class="fix-d pr"></span>Set PDF Version</div>
+    <div class="fix"><span class="fix-d pr"></span>Add Trim Marks</div>
+  </div>
+
+  <p class="fix-note">
+    <span style="color:var(--orange)">&#9679;</span>&ensp;Reactive fixes trigger when checks fail.
+    <span style="color:var(--green)">&#9679;</span>&ensp;Proactive tools are always available.
+    Queue them up, review, hit apply. Your original is never touched.
+  </p>
+</section>
+
+<hr class="divider">
+
+<!-- ════════════════════════════ OPEN SOURCE ════════════════════════════ -->
+<section class="crop-section oss rv" id="oss">
+  <div class="label">TaxiwayCore &middot; Open Source</div>
+  <h2>The engine is yours.<br>Build whatever you want.</h2>
+
+  <div class="oss-cols">
+    <div>
+      <p class="copy">
+        The entire preflight engine — parser, checks, profiles, reports — lives
+        in <strong>TaxiwayCore</strong>, a standalone Swift Package with zero UI
+        dependencies and zero third-party libraries.
+      </p>
+      <p class="copy" style="margin-top:0.8rem">
+        Import it into your own tools. Run it on a server. Embed it in CI.
+        Build a competing app — honestly, we'd be flattered.
+      </p>
+      <p class="copy" style="margin-top:0.8rem">
+        Pure Swift 6. Sendable throughout. Immutable document model.
+        <strong>524 tests</strong> and counting.
+      </p>
+      <p style="margin-top:1.2rem">
+        <a href="#" class="btn btn-outline" style="display:inline-block">View on GitHub</a>
+      </p>
+    </div>
+
+    <div class="term">
+      <div class="term-bar">
+        <div class="td r"></div><div class="td y"></div><div class="td g"></div>
+        <span class="term-t">TaxiwayCore</span>
+      </div>
+      <div class="term-body"><span class="cm"># Add to Package.swift</span><br><span class="vl">.package(path: <span class="fl">"TaxiwayCore"</span>)</span><br><br><span class="cm"># Run the test suite</span><br><span class="pr">$</span> <span class="vl">swift test</span><br><span class="ou">Building for debugging...</span><br><span class="ou">Build complete!</span><br><span class="ok">&#10003; 524 tests in 83 suites passed</span><br><br><span class="cm"># Dependencies?</span><br><span class="pr">$</span> <span class="vl">swift package show-dependencies</span><br><span class="ou">TaxiwayCore</span><br><span class="ou">&ensp;&ensp;<span class="fl">(none)</span></span></div>
+    </div>
+  </div>
+</section>
+
+</div><!-- .wrap -->
+
+<!-- ════════════════════════════ FOOTER ════════════════════════════ -->
+<footer id="download">
+  <div class="f-lights"><div class="f-l g"></div><div class="f-l a"></div></div>
+  <div class="f-brand">a delphi tool</div>
+  <div class="f-links">
+    <a href="#">Download</a>
+    <a href="#">GitHub</a>
+    <a href="#">Docs</a>
+  </div>
+  <p class="f-copy">
+    Free and open-source &middot; macOS 26+ &middot; Apple Silicon native
+  </p>
+</footer>
+
+<script>
+// ═══ SOLARI BOARD (preserved) ═══
+(function() {
+  const word = 'TAXIWAY';
+  const board = document.getElementById('solari-board');
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+  word.split('').forEach((target, i) => {
+    const card = document.createElement('div');
+    card.className = 'solari-char';
+
+    const top = document.createElement('div');
+    top.className = 'solari-half top';
+    const topL = document.createElement('span');
+    topL.className = 'solari-letter';
+    topL.textContent = ' ';
+    top.appendChild(topL);
+
+    const bot = document.createElement('div');
+    bot.className = 'solari-half bot';
+    const botL = document.createElement('span');
+    botL.className = 'solari-letter';
+    botL.textContent = ' ';
+    bot.appendChild(botL);
+
+    card.appendChild(top);
+    card.appendChild(bot);
+    board.appendChild(card);
+
+    const rolls = 5 + Math.floor(Math.random() * 5);
+    let count = 0;
+
+    setTimeout(() => {
+      const tick = () => {
+        const ch = count < rolls ? alphabet[Math.floor(Math.random() * 26)] : target;
+        topL.textContent = ch;
+        botL.textContent = ch;
+        top.style.transition = 'transform 0.06s ease-in';
+        top.style.transformOrigin = 'bottom';
+        top.style.transform = 'perspective(400px) rotateX(-8deg)';
+        setTimeout(() => {
+          top.style.transition = 'transform 0.06s ease-out';
+          top.style.transform = 'perspective(400px) rotateX(0deg)';
+        }, 60);
+        count++;
+        if (count <= rolls) setTimeout(tick, 55 + count * 6);
+      };
+      tick();
+    }, 200 + i * 140);
+  });
+})();
+
+// ═══ SCROLL REVEAL ═══
+(function() {
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('vis'); obs.unobserve(e.target); } });
+  }, { threshold: 0.05, rootMargin: '0px 0px -20px 0px' });
+  document.querySelectorAll('.rv').forEach(el => obs.observe(el));
+})();
+
+// ═══ STAT COUNTER ═══
+(function() {
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      const el = entry.target;
+      obs.unobserve(el);
+      const end = parseInt(el.dataset.to, 10);
+      const pre = el.dataset.prefix || '';
+      if (isNaN(end) || end === 0) { el.textContent = pre + '0'; return; }
+      const t0 = performance.now();
+      (function tick(now) {
+        const p = Math.min((now - t0) / 800, 1);
+        el.textContent = pre + Math.round((1 - Math.pow(1 - p, 3)) * end);
+        if (p < 1) requestAnimationFrame(tick);
+      })(t0);
+    });
+  }, { threshold: 0.5 });
+  document.querySelectorAll('.stat-n').forEach(el => obs.observe(el));
+})();
+</script>
+</body>
+</html>

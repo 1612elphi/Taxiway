@@ -139,6 +139,167 @@ extension PreflightProfile {
         ]
     )
 
+    /// PDF/X-3 compliance profile — European print with ICC-based colour management.
+    public static let pdfX3 = PreflightProfile(
+        id: UUID(uuidString: "00000000-0000-0000-0000-000000000005")!,
+        name: "PDF/X-3",
+        description: "European print-production profile for PDF/X-3 compliance with ICC-based colour management.",
+        origin: .builtIn,
+        checks: [
+            try! CheckEntry(typeID: "pdf.conformance", enabled: true,
+                            parameters: PDFConformanceCheck.Parameters(standard: .x3),
+                            severityOverride: .error),
+            try! CheckEntry(typeID: "fonts.not_embedded", enabled: true, parameters: EmptyParameters(), severityOverride: .error),
+            try! CheckEntry(typeID: "marks.trim_box_set", enabled: true, parameters: EmptyParameters(), severityOverride: .error),
+            try! CheckEntry(typeID: "marks.bleed_zero", enabled: true, parameters: EmptyParameters(), severityOverride: .error),
+            try! CheckEntry(typeID: "file.encryption", enabled: true,
+                            parameters: EncryptionCheck.Parameters(expected: false),
+                            severityOverride: .error),
+            try! CheckEntry(typeID: "pdf.output_intent", enabled: true,
+                            parameters: OutputIntentCheck.Parameters(expected: true),
+                            severityOverride: .error),
+            try! CheckEntry(typeID: "images.resolution_below", enabled: true,
+                            parameters: ResolutionBelowCheck.Parameters(thresholdPPI: 150),
+                            severityOverride: .warning),
+        ]
+    )
+
+    /// PDF/A-2b archival profile — long-term preservation with accessibility tagging.
+    public static let pdfA2b = PreflightProfile(
+        id: UUID(uuidString: "00000000-0000-0000-0000-000000000006")!,
+        name: "PDF/A-2b",
+        description: "Long-term archival profile for PDF/A-2b compliance — tagged, no encryption or JavaScript.",
+        origin: .builtIn,
+        checks: [
+            try! CheckEntry(typeID: "pdf.conformance", enabled: true,
+                            parameters: PDFConformanceCheck.Parameters(standard: .a2b),
+                            severityOverride: .error),
+            try! CheckEntry(typeID: "fonts.not_embedded", enabled: true, parameters: EmptyParameters(), severityOverride: .error),
+            try! CheckEntry(typeID: "file.encryption", enabled: true,
+                            parameters: EncryptionCheck.Parameters(expected: false),
+                            severityOverride: .error),
+            try! CheckEntry(typeID: "file.javascript", enabled: true, parameters: EmptyParameters(), severityOverride: .error),
+            try! CheckEntry(typeID: "file.embedded_files", enabled: true, parameters: EmptyParameters(), severityOverride: .error),
+            try! CheckEntry(typeID: "pdf.tagged", enabled: true,
+                            parameters: TaggedCheck.Parameters(expected: true),
+                            severityOverride: .error),
+            try! CheckEntry(typeID: "pdf.transparency", enabled: true,
+                            parameters: TransparencyCheck.Parameters(operator: .is),
+                            severityOverride: .warning),
+        ]
+    )
+
+    /// Digital print profile — short-run digital / toner production.
+    public static let digitalPrint = PreflightProfile(
+        id: UUID(uuidString: "00000000-0000-0000-0000-000000000007")!,
+        name: "Digital Print",
+        description: "Short-run digital and toner print profile — 3mm bleed, no overprint, no rich black on text.",
+        origin: .builtIn,
+        checks: [
+            try! CheckEntry(typeID: "fonts.not_embedded", enabled: true, parameters: EmptyParameters(), severityOverride: .error),
+            try! CheckEntry(typeID: "marks.trim_box_set", enabled: true, parameters: EmptyParameters(), severityOverride: .error),
+            try! CheckEntry(typeID: "marks.bleed_less_than", enabled: true,
+                            parameters: BleedLessThanCheck.Parameters(thresholdMM: 3.0),
+                            severityOverride: .warning),
+            try! CheckEntry(typeID: "colour.overprint", enabled: true,
+                            parameters: OverprintCheck.Parameters(context: .white),
+                            severityOverride: .error),
+            try! CheckEntry(typeID: "colour.overprint", enabled: true,
+                            parameters: OverprintCheck.Parameters(context: .fill),
+                            severityOverride: .warning),
+            try! CheckEntry(typeID: "colour.rich_black", enabled: true, parameters: EmptyParameters(), severityOverride: .warning),
+            try! CheckEntry(typeID: "images.resolution_below", enabled: true,
+                            parameters: ResolutionBelowCheck.Parameters(thresholdPPI: 150),
+                            severityOverride: .warning),
+            try! CheckEntry(typeID: "file.encryption", enabled: true,
+                            parameters: EncryptionCheck.Parameters(expected: false),
+                            severityOverride: .error),
+            try! CheckEntry(typeID: "pdf.transparency", enabled: true,
+                            parameters: TransparencyCheck.Parameters(operator: .is),
+                            severityOverride: .warning),
+        ]
+    )
+
+    /// Newspaper profile — web-offset / newsprint with strict ink limits.
+    public static let newspaper = PreflightProfile(
+        id: UUID(uuidString: "00000000-0000-0000-0000-000000000008")!,
+        name: "Newspaper",
+        description: "Web-offset and newsprint profile — strict ink limits, CMYK only, no transparency or spot colours.",
+        origin: .builtIn,
+        checks: [
+            try! CheckEntry(typeID: "fonts.not_embedded", enabled: true, parameters: EmptyParameters(), severityOverride: .error),
+            try! CheckEntry(typeID: "colour.space_used", enabled: true,
+                            parameters: ColourSpaceUsedCheck.Parameters(colourSpace: .deviceRGB, operator: .is),
+                            severityOverride: .error),
+            try! CheckEntry(typeID: "colour.ink_coverage", enabled: true,
+                            parameters: InkCoverageCheck.Parameters(thresholdPercent: 240, operator: .moreThan),
+                            severityOverride: .error),
+            try! CheckEntry(typeID: "colour.spot_used", enabled: true, parameters: EmptyParameters(), severityOverride: .error),
+            try! CheckEntry(typeID: "pdf.transparency", enabled: true,
+                            parameters: TransparencyCheck.Parameters(operator: .is),
+                            severityOverride: .error),
+            try! CheckEntry(typeID: "images.resolution_below", enabled: true,
+                            parameters: ResolutionBelowCheck.Parameters(thresholdPPI: 150),
+                            severityOverride: .warning),
+            try! CheckEntry(typeID: "images.resolution_above", enabled: true,
+                            parameters: ResolutionAboveCheck.Parameters(thresholdPPI: 400),
+                            severityOverride: .warning),
+            try! CheckEntry(typeID: "lines.stroke_below", enabled: true,
+                            parameters: StrokeWeightBelowCheck.Parameters(thresholdPt: 0.25),
+                            severityOverride: .warning),
+        ]
+    )
+
+    /// Large format profile — signage, posters, banners with relaxed resolution.
+    public static let largeFormat = PreflightProfile(
+        id: UUID(uuidString: "00000000-0000-0000-0000-000000000009")!,
+        name: "Large Format",
+        description: "Signage, poster, and banner profile — relaxed resolution thresholds, CMYK preferred.",
+        origin: .builtIn,
+        checks: [
+            try! CheckEntry(typeID: "fonts.not_embedded", enabled: true, parameters: EmptyParameters(), severityOverride: .error),
+            try! CheckEntry(typeID: "colour.space_used", enabled: true,
+                            parameters: ColourSpaceUsedCheck.Parameters(colourSpace: .deviceRGB, operator: .is),
+                            severityOverride: .warning),
+            try! CheckEntry(typeID: "images.resolution_below", enabled: true,
+                            parameters: ResolutionBelowCheck.Parameters(thresholdPPI: 100),
+                            severityOverride: .warning),
+            try! CheckEntry(typeID: "file.encryption", enabled: true,
+                            parameters: EncryptionCheck.Parameters(expected: false),
+                            severityOverride: .error),
+            try! CheckEntry(typeID: "lines.stroke_below", enabled: true,
+                            parameters: StrokeWeightBelowCheck.Parameters(thresholdPt: 0.5),
+                            severityOverride: .warning),
+            try! CheckEntry(typeID: "marks.trim_box_set", enabled: true, parameters: EmptyParameters(), severityOverride: .warning),
+            try! CheckEntry(typeID: "pdf.transparency", enabled: true,
+                            parameters: TransparencyCheck.Parameters(operator: .is),
+                            severityOverride: .warning),
+        ]
+    )
+
+    /// AI content audit profile — flags AI-generated content and checks provenance metadata.
+    public static let aiContentAudit = PreflightProfile(
+        id: UUID(uuidString: "00000000-0000-0000-0000-00000000000A")!,
+        name: "AI Content Audit",
+        description: "Editorial and news profile — flags AI-generated content, checks C2PA provenance metadata.",
+        origin: .builtIn,
+        checks: [
+            try! CheckEntry(typeID: "images.genai", enabled: true, parameters: EmptyParameters(), severityOverride: .error),
+            try! CheckEntry(typeID: "images.c2pa", enabled: true, parameters: EmptyParameters(), severityOverride: .warning),
+            try! CheckEntry(typeID: "file.encryption", enabled: true,
+                            parameters: EncryptionCheck.Parameters(expected: false),
+                            severityOverride: .error),
+            try! CheckEntry(typeID: "file.javascript", enabled: true, parameters: EmptyParameters(), severityOverride: .error),
+            try! CheckEntry(typeID: "pdf.annotations", enabled: true, parameters: EmptyParameters(), severityOverride: .warning),
+            try! CheckEntry(typeID: "images.resolution_below", enabled: true,
+                            parameters: ResolutionBelowCheck.Parameters(thresholdPPI: 72),
+                            severityOverride: .warning),
+        ]
+    )
+
     /// All built-in profiles.
-    public static let allBuiltIn: [PreflightProfile] = [.pdfX1a, .pdfX4, .screenDigital, .loose]
+    public static let allBuiltIn: [PreflightProfile] = [
+        .pdfX1a, .pdfX4, .pdfX3, .pdfA2b, .screenDigital,
+        .digitalPrint, .newspaper, .largeFormat, .loose, .aiContentAudit,
+    ]
 }

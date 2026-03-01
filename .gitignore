@@ -19,3 +19,6 @@ vendor/
 
 # Ghostscript build artifacts
 .gs-build/
+
+# Built app bundles
+*.app/

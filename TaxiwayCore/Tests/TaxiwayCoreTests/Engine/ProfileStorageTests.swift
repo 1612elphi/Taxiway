@@ -85,13 +85,19 @@ struct ProfileStorageTests {
         try storage.save(userProfile)
 
         let all = try storage.listAllProfiles()
-        // 4 built-ins + 1 user
-        #expect(all.count == 5)
+        // 10 built-ins + 1 user
+        #expect(all.count == 11)
         #expect(all[0].name == "PDF/X-1a")
         #expect(all[1].name == "PDF/X-4")
-        #expect(all[2].name == "Screen / Digital")
-        #expect(all[3].name == "Loose")
-        #expect(all[4].name == "User Custom")
+        #expect(all[2].name == "PDF/X-3")
+        #expect(all[3].name == "PDF/A-2b")
+        #expect(all[4].name == "Screen / Digital")
+        #expect(all[5].name == "Digital Print")
+        #expect(all[6].name == "Newspaper")
+        #expect(all[7].name == "Large Format")
+        #expect(all[8].name == "Loose")
+        #expect(all[9].name == "AI Content Audit")
+        #expect(all[10].name == "User Custom")
     }
 
     // MARK: - Delete
