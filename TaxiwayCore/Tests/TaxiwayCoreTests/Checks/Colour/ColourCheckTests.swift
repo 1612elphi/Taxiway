@@ -302,4 +302,207 @@ struct ColourCheckTests {
             #expect(check.defaultSeverity == .warning)
         }
     }
+
+    // MARK: - UnnamedSpotColourCheck
+
+    @Suite("UnnamedSpotColourCheck")
+    struct UnnamedSpotColourCheckTests {
+
+        @Test("Passes when all spot colours have names")
+        func passWithNamedSpots() {
+            let check = UnnamedSpotColourCheck()
+            let result = check.run(on: .sample)
+
+            #expect(result.status == .pass)
+            #expect(result.message.contains("No unnamed"))
+        }
+
+        @Test("Fails when spot colour has empty name")
+        func failWithEmptyName() {
+            let doc = TaxiwayDocument.sample.withSpotColours([
+                SpotColourInfo(name: "", pagesUsedOn: [0]),
+                SpotColourInfo(name: "PANTONE 485 C", pagesUsedOn: [1]),
+            ])
+            let check = UnnamedSpotColourCheck()
+            let result = check.run(on: doc)
+
+            #expect(result.status == .fail)
+            #expect(result.message.contains("1 unnamed"))
+        }
+
+        @Test("Fails when spot colour has whitespace-only name")
+        func failWithWhitespaceName() {
+            let doc = TaxiwayDocument.sample.withSpotColours([
+                SpotColourInfo(name: "   ", pagesUsedOn: [0]),
+            ])
+            let check = UnnamedSpotColourCheck()
+            let result = check.run(on: doc)
+
+            #expect(result.status == .fail)
+        }
+
+        @Test("Passes on empty document")
+        func passOnEmptyDocument() {
+            let check = UnnamedSpotColourCheck()
+            let result = check.run(on: .empty)
+
+            #expect(result.status == .pass)
+        }
+
+        @Test("TypeID is colour.unnamed_spot")
+        func typeID() {
+            #expect(UnnamedSpotColourCheck.typeID == "colour.unnamed_spot")
+        }
+
+        @Test("Default severity is warning")
+        func defaultSeverity() {
+            let check = UnnamedSpotColourCheck()
+            #expect(check.defaultSeverity == .warning)
+        }
+    }
+
+    // MARK: - RichBlackCheck
+
+    @Suite("RichBlackCheck")
+    struct RichBlackCheckTests {
+
+        @Test("Passes when no rich black present")
+        func passNoRichBlack() {
+            // Sample has pure black (0,0,0,1) — K=100% but C/M/Y all 0
+            let check = RichBlackCheck()
+            let result = check.run(on: .sample)
+
+            #expect(result.status == .pass)
+            #expect(result.message.contains("No rich black"))
+        }
+
+        @Test("Fails when rich black detected")
+        func failWithRichBlack() {
+            let doc = TaxiwayDocument.sample.withColourUsages([
+                ColourUsageInfo(
+                    id: "cmyk:60,40,40,100",
+                    name: "Rich Black",
+                    colourType: .process,
+                    mode: .cmyk,
+                    components: [0.6, 0.4, 0.4, 1.0],
+                    inkSum: 240,
+                    usageContexts: [.textFill],
+                    pagesUsedOn: [0]
+                ),
+            ])
+            let check = RichBlackCheck()
+            let result = check.run(on: doc)
+
+            #expect(result.status == .fail)
+            #expect(result.message.contains("1 rich black"))
+        }
+
+        @Test("Passes with pure K-only black")
+        func passWithPureBlack() {
+            let doc = TaxiwayDocument.sample.withColourUsages([
+                ColourUsageInfo(
+                    id: "cmyk:0,0,0,100",
+                    name: "[Black]",
+                    colourType: .process,
+                    mode: .cmyk,
+                    components: [0, 0, 0, 1.0],
+                    inkSum: 100,
+                    usageContexts: [.textFill],
+                    pagesUsedOn: [0]
+                ),
+            ])
+            let check = RichBlackCheck()
+            let result = check.run(on: doc)
+
+            #expect(result.status == .pass)
+        }
+
+        @Test("Ignores non-CMYK colours")
+        func ignoresNonCMYK() {
+            let doc = TaxiwayDocument.sample.withColourUsages([
+                ColourUsageInfo(
+                    id: "rgb:0,0,0",
+                    name: "RGB Black",
+                    colourType: .process,
+                    mode: .rgb,
+                    components: [0, 0, 0],
+                    inkSum: nil,
+                    usageContexts: [.textFill],
+                    pagesUsedOn: [0]
+                ),
+            ])
+            let check = RichBlackCheck()
+            let result = check.run(on: doc)
+
+            #expect(result.status == .pass)
+        }
+
+        @Test("Passes on empty document")
+        func passOnEmptyDocument() {
+            let check = RichBlackCheck()
+            let result = check.run(on: .empty)
+
+            #expect(result.status == .pass)
+        }
+
+        @Test("TypeID is colour.rich_black")
+        func typeID() {
+            #expect(RichBlackCheck.typeID == "colour.rich_black")
+        }
+    }
+
+    // MARK: - InkCoverageCheck
+
+    @Suite("InkCoverageCheck")
+    struct InkCoverageCheckTests {
+
+        @Test("Passes when all ink sums below threshold")
+        func passUnderThreshold() {
+            // Sample has [Black] at 100% ink sum
+            let check = InkCoverageCheck(parameters: .init(thresholdPercent: 300, operator: .moreThan))
+            let result = check.run(on: .sample)
+
+            #expect(result.status == .pass)
+        }
+
+        @Test("Fails when ink sum exceeds threshold")
+        func failOverThreshold() {
+            let doc = TaxiwayDocument.sample.withColourUsages([
+                ColourUsageInfo(
+                    id: "cmyk:100,80,60,100",
+                    name: "Heavy Black",
+                    colourType: .process,
+                    mode: .cmyk,
+                    components: [1, 0.8, 0.6, 1],
+                    inkSum: 340,
+                    usageContexts: [.pathFill],
+                    pagesUsedOn: [0]
+                ),
+            ])
+            let check = InkCoverageCheck(parameters: .init(thresholdPercent: 300, operator: .moreThan))
+            let result = check.run(on: doc)
+
+            #expect(result.status == .fail)
+            #expect(result.message.contains("1 colour"))
+        }
+
+        @Test("Passes on empty document")
+        func passOnEmptyDocument() {
+            let check = InkCoverageCheck(parameters: .init(thresholdPercent: 300, operator: .moreThan))
+            let result = check.run(on: .empty)
+
+            #expect(result.status == .pass)
+        }
+
+        @Test("TypeID is colour.ink_coverage")
+        func typeID() {
+            #expect(InkCoverageCheck.typeID == "colour.ink_coverage")
+        }
+
+        @Test("Default severity is warning")
+        func defaultSeverity() {
+            let check = InkCoverageCheck(parameters: .init(thresholdPercent: 300, operator: .moreThan))
+            #expect(check.defaultSeverity == .warning)
+        }
+    }
 }

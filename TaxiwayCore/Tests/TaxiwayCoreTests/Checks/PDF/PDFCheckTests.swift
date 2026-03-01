@@ -344,3 +344,59 @@ struct AnnotationsPresentCheckTests {
         #expect(check.defaultSeverity == .warning)
     }
 }
+
+// MARK: - AllTextOutlinedCheck
+
+@Suite("AllTextOutlinedCheck")
+struct AllTextOutlinedCheckTests {
+
+    @Test("Passes when no live text with operator .is")
+    func passNoLiveTextIs() {
+        // Empty document has no text frames → all outlined
+        let check = AllTextOutlinedCheck(parameters: .init(operator: .is))
+        let result = check.run(on: .empty)
+
+        #expect(result.status == .pass)
+        #expect(result.message.contains("outlined"))
+    }
+
+    @Test("Fails when live text found with operator .is")
+    func failLiveTextIs() {
+        // Sample has text frames
+        let check = AllTextOutlinedCheck(parameters: .init(operator: .is))
+        let result = check.run(on: .sample)
+
+        #expect(result.status == .fail)
+        #expect(result.message.contains("live text"))
+        #expect(result.affectedItems == [.document])
+    }
+
+    @Test("Passes when live text found with operator .isNot")
+    func passLiveTextIsNot() {
+        let check = AllTextOutlinedCheck(parameters: .init(operator: .isNot))
+        let result = check.run(on: .sample)
+
+        #expect(result.status == .pass)
+        #expect(result.message.contains("Live text is present"))
+    }
+
+    @Test("Fails when no live text with operator .isNot")
+    func failNoLiveTextIsNot() {
+        let check = AllTextOutlinedCheck(parameters: .init(operator: .isNot))
+        let result = check.run(on: .empty)
+
+        #expect(result.status == .fail)
+        #expect(result.message.contains("outlined"))
+    }
+
+    @Test("TypeID is pdf.all_text_outlined")
+    func typeID() {
+        #expect(AllTextOutlinedCheck.typeID == "pdf.all_text_outlined")
+    }
+
+    @Test("Default severity is info")
+    func defaultSeverity() {
+        let check = AllTextOutlinedCheck(parameters: .init(operator: .is))
+        #expect(check.defaultSeverity == .info)
+    }
+}

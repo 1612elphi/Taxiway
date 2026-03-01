@@ -54,6 +54,7 @@ public struct ImageInfo: Codable, Sendable, Equatable {
     public let hasAlphaChannel: Bool
     public let blendMode: BlendMode
     public let opacity: Double
+    public let bounds: AnnotationBounds?
 
     public var effectivePPIHorizontal: Double {
         guard effectiveWidthPoints > 0 else { return 0 }
@@ -76,7 +77,8 @@ public struct ImageInfo: Codable, Sendable, Equatable {
                 effectiveWidthPoints: Double, effectiveHeightPoints: Double,
                 colourMode: ImageColourMode, compressionType: ImageCompressionType,
                 bitsPerComponent: Int, hasICCProfile: Bool, hasICCOverride: Bool,
-                hasAlphaChannel: Bool, blendMode: BlendMode, opacity: Double) {
+                hasAlphaChannel: Bool, blendMode: BlendMode, opacity: Double,
+                bounds: AnnotationBounds? = nil) {
         self.id = id
         self.pageIndex = pageIndex
         self.widthPixels = widthPixels
@@ -91,5 +93,6 @@ public struct ImageInfo: Codable, Sendable, Equatable {
         self.hasAlphaChannel = hasAlphaChannel
         self.blendMode = blendMode
         self.opacity = opacity
+        self.bounds = bounds
     }
 }

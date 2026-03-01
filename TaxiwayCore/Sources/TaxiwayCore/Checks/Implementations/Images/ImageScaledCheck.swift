@@ -45,7 +45,7 @@ public struct ImageScaledCheck: ParameterisedCheck {
             return pass(message: "No images are scaled beyond \(String(format: "%.0f", parameters.tolerancePercent))% tolerance")
         }
 
-        let affectedItems = affected.map { AffectedItem.image(id: $0.0.id, page: $0.0.pageIndex) }
+        let affectedItems = affected.map { AffectedItem.image(id: $0.0.id, page: $0.0.pageIndex, bounds: $0.0.bounds) }
         let details = affected.map { img, pct in
             "\(img.id): \(String(format: "%.1f", pct))%"
         }.joined(separator: ", ")

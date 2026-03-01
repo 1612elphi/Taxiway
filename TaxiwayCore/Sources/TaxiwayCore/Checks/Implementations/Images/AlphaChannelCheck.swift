@@ -28,7 +28,7 @@ public struct AlphaChannelCheck: ParameterisedCheck {
             return pass(message: "No images have alpha channels")
         }
 
-        let affectedItems = affected.map { AffectedItem.image(id: $0.id, page: $0.pageIndex) }
+        let affectedItems = affected.map { AffectedItem.image(id: $0.id, page: $0.pageIndex, bounds: $0.bounds) }
         return fail(
             message: "\(affected.count) image(s) contain alpha channel",
             detail: "Affected: \(affected.map(\.id).joined(separator: ", "))",

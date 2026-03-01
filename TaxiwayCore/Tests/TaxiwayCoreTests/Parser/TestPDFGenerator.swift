@@ -122,6 +122,45 @@ enum TestPDFGenerator {
         return true
     }
 
+    /// Creates a PDF with multiple colour types: gray fill rect, RGB stroke rect, CMYK text.
+    @discardableResult
+    static func createPDFWithColours(at url: URL) -> Bool {
+        let pageSize = a4Size
+        var mediaBox = CGRect(origin: .zero, size: pageSize)
+
+        guard let context = CGContext(url as CFURL, mediaBox: &mediaBox, nil) else {
+            return false
+        }
+
+        context.beginPage(mediaBox: &mediaBox)
+
+        // 1. Gray fill rectangle
+        context.setFillColor(gray: 0.5, alpha: 1.0)
+        context.fill(CGRect(x: 50, y: 600, width: 100, height: 80))
+
+        // 2. RGB stroke rectangle
+        context.setStrokeColor(red: 1.0, green: 0.0, blue: 0.0, alpha: 1.0)
+        context.setLineWidth(2.0)
+        context.stroke(CGRect(x: 200, y: 600, width: 100, height: 80))
+
+        // 3. Text using Core Text (will use DeviceGray/DeviceRGB depending on system)
+        let font = CTFontCreateWithName("Helvetica" as CFString, 18, nil)
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: font,
+            .foregroundColor: CGColor(red: 0, green: 0, blue: 0, alpha: 1)
+        ]
+        let attrString = NSAttributedString(string: "Colour Test", attributes: attributes)
+        let line = CTLineCreateWithAttributedString(attrString)
+
+        context.textPosition = CGPoint(x: 72, y: pageSize.height - 72)
+        CTLineDraw(line, context)
+
+        context.endPage()
+        context.closePDF()
+
+        return true
+    }
+
     /// Creates a temporary directory for test PDFs and returns its URL.
     static func createTempDirectory() -> URL {
         let tempDir = FileManager.default.temporaryDirectory

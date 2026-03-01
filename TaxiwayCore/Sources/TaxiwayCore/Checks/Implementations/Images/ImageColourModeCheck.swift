@@ -52,7 +52,7 @@ public struct ImageColourModeCheck: ParameterisedCheck {
             }
         }
 
-        let affectedItems = affected.map { AffectedItem.image(id: $0.id, page: $0.pageIndex) }
+        let affectedItems = affected.map { AffectedItem.image(id: $0.id, page: $0.pageIndex, bounds: $0.bounds) }
         let verb: String
         switch op {
         case .is:

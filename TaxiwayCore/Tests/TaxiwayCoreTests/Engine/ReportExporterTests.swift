@@ -203,6 +203,7 @@ struct ReportExporterHelperTests {
             .image(id: "img_1", page: 3),
             .colourSpace(name: "DeviceRGB", pages: [0]),
             .annotation(type: "Link", page: 4),
+            .textFrame(id: "txt_0_0", page: 0),
         ]
         let desc = ReportExporter.affectedItemsDescription(items)
         #expect(desc.contains("Document"))
@@ -211,6 +212,7 @@ struct ReportExporterHelperTests {
         #expect(desc.contains("Image img_1 (page 4)"))
         #expect(desc.contains("Colour space: DeviceRGB"))
         #expect(desc.contains("Link (page 5)"))
+        #expect(desc.contains("Text frame txt_0_0 (page 1)"))
     }
 
     @Test("Severity string maps correctly")

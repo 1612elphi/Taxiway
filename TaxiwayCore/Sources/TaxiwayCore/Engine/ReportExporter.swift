@@ -150,12 +150,14 @@ public enum ReportExporter {
                 return "Page \(index + 1)"
             case .font(let name, _):
                 return "Font: \(name)"
-            case .image(let id, let page):
+            case .image(let id, let page, _):
                 return "Image \(id) (page \(page + 1))"
             case .colourSpace(let name, _):
                 return "Colour space: \(name)"
             case .annotation(let type, let page, _):
                 return "\(type) (page \(page + 1))"
+            case .textFrame(let id, let page, _):
+                return "Text frame \(id) (page \(page + 1))"
             }
         }.joined(separator: "; ")
     }

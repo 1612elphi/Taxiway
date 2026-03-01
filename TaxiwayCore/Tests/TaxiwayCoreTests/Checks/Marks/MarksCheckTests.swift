@@ -492,3 +492,77 @@ struct TrimBoxSetCheckTests {
         #expect(check.defaultSeverity == .error)
     }
 }
+
+// MARK: - ArtSlugBoxCheck
+
+@Suite("ArtSlugBoxCheck")
+struct ArtSlugBoxCheckTests {
+
+    @Test("Passes when no art box set with operator .is")
+    func passNoArtBoxIs() {
+        // Sample pages have artBox: nil
+        let check = ArtSlugBoxCheck(parameters: .init(operator: .is))
+        let result = check.run(on: .sample)
+
+        #expect(result.status == .pass)
+        #expect(result.message.contains("No art box"))
+    }
+
+    @Test("Fails when art box set with operator .is")
+    func failArtBoxSetIs() {
+        let mediaBox = CGRect(x: 0, y: 0, width: 595, height: 842)
+        let artBox = CGRect(x: 10, y: 10, width: 575, height: 822)
+        let doc = TaxiwayDocument.sample.withPages([
+            PageInfo(index: 0, mediaBox: mediaBox, trimBox: mediaBox, bleedBox: nil, artBox: artBox, rotation: 0),
+        ])
+        let check = ArtSlugBoxCheck(parameters: .init(operator: .is))
+        let result = check.run(on: doc)
+
+        #expect(result.status == .fail)
+        #expect(result.message.contains("1 page"))
+        #expect(result.affectedItems == [.page(index: 0)])
+    }
+
+    @Test("Fails when no art box set with operator .isNot")
+    func failNoArtBoxIsNot() {
+        let check = ArtSlugBoxCheck(parameters: .init(operator: .isNot))
+        let result = check.run(on: .sample)
+
+        #expect(result.status == .fail)
+        #expect(result.message.contains("missing art box"))
+    }
+
+    @Test("Passes when all pages have art box with operator .isNot")
+    func passAllHaveArtBox() {
+        let mediaBox = CGRect(x: 0, y: 0, width: 595, height: 842)
+        let artBox = CGRect(x: 10, y: 10, width: 575, height: 822)
+        let doc = TaxiwayDocument.sample.withPages([
+            PageInfo(index: 0, mediaBox: mediaBox, trimBox: mediaBox, bleedBox: nil, artBox: artBox, rotation: 0),
+            PageInfo(index: 1, mediaBox: mediaBox, trimBox: mediaBox, bleedBox: nil, artBox: artBox, rotation: 0),
+        ])
+        let check = ArtSlugBoxCheck(parameters: .init(operator: .isNot))
+        let result = check.run(on: doc)
+
+        #expect(result.status == .pass)
+        #expect(result.message.contains("All pages have art box"))
+    }
+
+    @Test("Passes on empty document with operator .is")
+    func passEmptyIs() {
+        let check = ArtSlugBoxCheck(parameters: .init(operator: .is))
+        let result = check.run(on: .empty)
+
+        #expect(result.status == .pass)
+    }
+
+    @Test("TypeID is marks.art_slug_box")
+    func typeID() {
+        #expect(ArtSlugBoxCheck.typeID == "marks.art_slug_box")
+    }
+
+    @Test("Default severity is info")
+    func defaultSeverity() {
+        let check = ArtSlugBoxCheck(parameters: .init(operator: .is))
+        #expect(check.defaultSeverity == .info)
+    }
+}

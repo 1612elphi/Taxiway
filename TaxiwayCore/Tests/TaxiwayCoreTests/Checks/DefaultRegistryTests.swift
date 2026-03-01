@@ -5,10 +5,10 @@ import Foundation
 @Suite("DefaultRegistry")
 struct DefaultRegistryTests {
 
-    @Test("Default registry contains all 43 check types")
+    @Test("Default registry contains all 47 check types")
     func registryContainsAllCheckTypes() {
         let registry = CheckRegistry.default
-        #expect(registry.registeredTypeIDs.count >= 43)
+        #expect(registry.registeredTypeIDs.count >= 47)
     }
 
     @Test("Default registry contains every expected typeID")
@@ -25,10 +25,13 @@ struct DefaultRegistryTests {
         #expect(ids.contains("file.metadata.present"))
 
         // Colour
+        #expect(ids.contains("colour.ink_coverage"))
+        #expect(ids.contains("colour.rich_black"))
         #expect(ids.contains("colour.space_used"))
         #expect(ids.contains("colour.registration"))
         #expect(ids.contains("colour.spot_count"))
         #expect(ids.contains("colour.spot_used"))
+        #expect(ids.contains("colour.unnamed_spot"))
 
         // Fonts
         #expect(ids.contains("fonts.not_embedded"))
@@ -54,6 +57,7 @@ struct DefaultRegistryTests {
         #expect(ids.contains("lines.zero_width"))
 
         // Marks
+        #expect(ids.contains("marks.art_slug_box"))
         #expect(ids.contains("marks.bleed_greater_than"))
         #expect(ids.contains("marks.bleed_less_than"))
         #expect(ids.contains("marks.bleed_non_uniform"))
@@ -68,6 +72,7 @@ struct DefaultRegistryTests {
         #expect(ids.contains("pages.size"))
 
         // PDF
+        #expect(ids.contains("pdf.all_text_outlined"))
         #expect(ids.contains("pdf.annotations"))
         #expect(ids.contains("pdf.layers"))
         #expect(ids.contains("pdf.linearized"))

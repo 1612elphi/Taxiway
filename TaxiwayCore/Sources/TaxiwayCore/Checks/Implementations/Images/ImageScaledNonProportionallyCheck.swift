@@ -51,7 +51,7 @@ public struct ImageScaledNonProportionallyCheck: ParameterisedCheck {
             return pass(message: "All images are scaled proportionally")
         }
 
-        let affectedItems = affected.map { AffectedItem.image(id: $0.id, page: $0.pageIndex) }
+        let affectedItems = affected.map { AffectedItem.image(id: $0.id, page: $0.pageIndex, bounds: $0.bounds) }
         let details = affected.map { img in
             let scaleX = img.effectiveWidthPoints / Double(img.widthPixels)
             let scaleY = img.effectiveHeightPoints / Double(img.heightPixels)

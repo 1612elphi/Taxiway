@@ -26,6 +26,34 @@ public struct FontSizeCheck: ParameterisedCheck {
     }
 
     public func run(on document: TaxiwayDocument) -> CheckResult {
-        return skip(message: "Font size detection requires content stream parsing (deferred)")
+        if document.textFrames.isEmpty {
+            return pass(message: "No text frames found")
+        }
+
+        let offending = document.textFrames.filter { frame in
+            switch parameters.operator {
+            case .lessThan:
+                return frame.fontSize < parameters.threshold
+            case .moreThan:
+                return frame.fontSize > parameters.threshold
+            case .equals:
+                return abs(frame.fontSize - parameters.threshold) < 0.01
+            }
+        }
+
+        if offending.isEmpty {
+            return pass(message: "All text sizes within threshold (\(String(format: "%.1f", parameters.threshold)) pt)")
+        }
+
+        let details = offending.map {
+            "\($0.fontName) at \(String(format: "%.1f", $0.fontSize)) pt (page \($0.pageIndex + 1))"
+        }
+        return fail(
+            message: "\(offending.count) text frame(s) outside font size threshold",
+            detail: details.joined(separator: ", "),
+            affectedItems: offending.map {
+                .textFrame(id: $0.id, page: $0.pageIndex, bounds: $0.bounds)
+            }
+        )
     }
 }

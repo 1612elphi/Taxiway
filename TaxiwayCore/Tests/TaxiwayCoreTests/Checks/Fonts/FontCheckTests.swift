@@ -176,38 +176,65 @@ struct FontCheckTests {
     @Suite("FontSizeCheck")
     struct FontSizeCheckTests {
 
-        @Test("Always returns skipped with lessThan operator")
-        func skippedLessThan() {
+        @Test("Fails when text below threshold with lessThan operator")
+        func failLessThan() {
+            // Sample has a 12pt text frame
+            let check = FontSizeCheck(parameters: .init(threshold: 14.0, operator: .lessThan))
+            let result = check.run(on: .sample)
+
+            #expect(result.status == .fail)
+            #expect(result.message.contains("1 text frame"))
+            #expect(!result.affectedItems.isEmpty)
+        }
+
+        @Test("Passes when text above threshold with lessThan operator")
+        func passLessThan() {
+            // Sample has 12pt text — checking < 6pt should find nothing
             let check = FontSizeCheck(parameters: .init(threshold: 6.0, operator: .lessThan))
             let result = check.run(on: .sample)
 
-            #expect(result.status == .skipped)
-            #expect(result.message.contains("content stream parsing"))
+            #expect(result.status == .pass)
         }
 
-        @Test("Always returns skipped with moreThan operator")
-        func skippedMoreThan() {
+        @Test("Passes when no text exceeds threshold with moreThan operator")
+        func passMoreThan() {
+            // Sample has 12pt text — checking > 72pt should find nothing
             let check = FontSizeCheck(parameters: .init(threshold: 72.0, operator: .moreThan))
             let result = check.run(on: .sample)
 
-            #expect(result.status == .skipped)
-            #expect(result.message.contains("deferred"))
+            #expect(result.status == .pass)
         }
 
-        @Test("Always returns skipped with equals operator")
-        func skippedEquals() {
+        @Test("Fails when text matches threshold with equals operator")
+        func failEquals() {
             let check = FontSizeCheck(parameters: .init(threshold: 12.0, operator: .equals))
             let result = check.run(on: .sample)
 
-            #expect(result.status == .skipped)
+            #expect(result.status == .fail)
+            #expect(result.message.contains("1 text frame"))
         }
 
-        @Test("Returns skipped even on empty document")
-        func skippedOnEmptyDocument() {
+        @Test("Passes on empty document")
+        func passOnEmptyDocument() {
             let check = FontSizeCheck(parameters: .init(threshold: 10.0, operator: .lessThan))
             let result = check.run(on: .empty)
 
-            #expect(result.status == .skipped)
+            #expect(result.status == .pass)
+            #expect(result.message.contains("No text frames"))
+        }
+
+        @Test("Reports textFrame affected items with bounds")
+        func affectedItemsHaveBounds() {
+            let check = FontSizeCheck(parameters: .init(threshold: 14.0, operator: .lessThan))
+            let result = check.run(on: .sample)
+
+            #expect(result.affectedItems.count == 1)
+            if case .textFrame(let id, let page, _) = result.affectedItems.first {
+                #expect(id == "txt_0_0")
+                #expect(page == 0)
+            } else {
+                Issue.record("Expected textFrame affected item")
+            }
         }
 
         @Test("TypeID is fonts.size")

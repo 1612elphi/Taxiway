@@ -134,6 +134,23 @@ struct CheckResultTests {
         #expect(decoded == item)
     }
 
+    @Test("AffectedItem.textFrame encodes/decodes")
+    func affectedItemTextFrame() throws {
+        let item = AffectedItem.textFrame(id: "txt_0_0", page: 0,
+                                          bounds: AnnotationBounds(x: 50, y: 700, width: 200, height: 14))
+        let data = try JSONEncoder().encode(item)
+        let decoded = try JSONDecoder().decode(AffectedItem.self, from: data)
+        #expect(decoded == item)
+    }
+
+    @Test("AffectedItem.textFrame encodes/decodes without bounds")
+    func affectedItemTextFrameNoBounds() throws {
+        let item = AffectedItem.textFrame(id: "txt_1_2", page: 1)
+        let data = try JSONEncoder().encode(item)
+        let decoded = try JSONDecoder().decode(AffectedItem.self, from: data)
+        #expect(decoded == item)
+    }
+
     // MARK: - CheckResult
 
     @Test("CheckResult Codable round-trip with all fields")

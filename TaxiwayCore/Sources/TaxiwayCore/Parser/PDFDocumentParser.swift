@@ -33,7 +33,9 @@ public struct PDFDocumentParser: Sendable {
         let images = ImageExtractor.extract(from: pdfDoc, warnings: &warnings)
         let colourSpaces = ColourExtractor.extractColourSpaces(from: pdfDoc, warnings: &warnings)
         let spotColours = ColourExtractor.extractSpotColours(from: pdfDoc, warnings: &warnings)
+        let colourUsages = extractColourUsages(from: pdfDoc)
         let annotations = AnnotationExtractor.extract(from: pdfDoc, warnings: &warnings)
+        let textFrames = extractTextFrames(from: pdfDoc)
         let metadata = MetadataExtractor.extract(from: pdfDoc, warnings: &warnings)
 
         return TaxiwayDocument(
@@ -44,7 +46,9 @@ public struct PDFDocumentParser: Sendable {
             images: images,
             colourSpaces: colourSpaces,
             spotColours: spotColours,
+            colourUsages: colourUsages,
             annotations: annotations,
+            textFrames: textFrames,
             metadata: metadata,
             parseWarnings: warnings
         )
@@ -130,6 +134,51 @@ public struct PDFDocumentParser: Sendable {
         }
 
         return false
+    }
+
+    // MARK: - Colour Usages
+
+    private func extractColourUsages(from pdfDoc: PDFDocument) -> [ColourUsageInfo] {
+        var rawUsages: [ContentStreamColourScanner.RawColourUsage] = []
+
+        for i in 0..<pdfDoc.pageCount {
+            guard let page = pdfDoc.page(at: i),
+                  let pageRef = page.pageRef else { continue }
+
+            let lookup = ContentStreamColourScanner.buildLookup(pageRef: pageRef)
+            let pageUsages = ContentStreamColourScanner.scan(
+                page: pageRef, pageIndex: i, lookup: lookup)
+            rawUsages.append(contentsOf: pageUsages)
+        }
+
+        return ContentStreamColourScanner.deduplicate(rawUsages)
+    }
+
+    // MARK: - Text Frames
+
+    private func extractTextFrames(from pdfDoc: PDFDocument) -> [TextFrameInfo] {
+        var frames: [TextFrameInfo] = []
+        var counter = 0
+
+        for i in 0..<pdfDoc.pageCount {
+            guard let page = pdfDoc.page(at: i),
+                  let pageRef = page.pageRef else { continue }
+
+            let placements = ContentStreamTextScanner.scan(page: pageRef)
+            for placement in placements {
+                let id = "txt_\(i)_\(counter)"
+                counter += 1
+                frames.append(TextFrameInfo(
+                    id: id,
+                    pageIndex: i,
+                    fontName: placement.fontName,
+                    fontSize: placement.fontSize,
+                    bounds: placement.bounds
+                ))
+            }
+        }
+
+        return frames
     }
 
     private func checkLayers(pdfDoc: PDFDocument) -> Bool {

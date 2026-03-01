@@ -28,7 +28,7 @@ public struct BlendModeOpacityCheck: ParameterisedCheck {
             return pass(message: "All images use normal blend mode at full opacity")
         }
 
-        let affectedItems = affected.map { AffectedItem.image(id: $0.id, page: $0.pageIndex) }
+        let affectedItems = affected.map { AffectedItem.image(id: $0.id, page: $0.pageIndex, bounds: $0.bounds) }
         let details = affected.map { img in
             var parts: [String] = []
             if img.blendMode != .normal {

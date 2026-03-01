@@ -36,7 +36,7 @@ public struct ResolutionAboveCheck: ParameterisedCheck {
             return pass(message: "All images within maximum resolution of \(String(format: "%.0f", threshold)) PPI")
         }
 
-        let affectedItems = affected.map { AffectedItem.image(id: $0.id, page: $0.pageIndex) }
+        let affectedItems = affected.map { AffectedItem.image(id: $0.id, page: $0.pageIndex, bounds: $0.bounds) }
         let details = affected.map { img in
             let ppi = max(img.effectivePPIHorizontal, img.effectivePPIVertical)
             return "\(img.id): \(String(format: "%.0f", ppi)) PPI"

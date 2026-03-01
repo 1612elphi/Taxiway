@@ -15,9 +15,12 @@ extension CheckRegistry {
 
         // Colour
         registry.register(ColourSpaceUsedCheck.self)
+        registry.register(InkCoverageCheck.self)
         registry.register(RegistrationColourCheck.self)
+        registry.register(RichBlackCheck.self)
         registry.register(SpotColourCountCheck.self)
         registry.register(SpotColourUsedCheck.self)
+        registry.register(UnnamedSpotColourCheck.self)
 
         // Fonts
         registry.register(FontNotEmbeddedCheck.self)
@@ -43,6 +46,7 @@ extension CheckRegistry {
         registry.register(ZeroWidthStrokeCheck.self)
 
         // Marks
+        registry.register(ArtSlugBoxCheck.self)
         registry.register(BleedGreaterThanCheck.self)
         registry.register(BleedLessThanCheck.self)
         registry.register(BleedNonUniformCheck.self)
@@ -57,6 +61,7 @@ extension CheckRegistry {
         registry.register(PageSizeCheck.self)
 
         // PDF
+        registry.register(AllTextOutlinedCheck.self)
         registry.register(AnnotationsPresentCheck.self)
         registry.register(LayersPresentCheck.self)
         registry.register(LinearizedCheck.self)

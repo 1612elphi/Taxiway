@@ -45,7 +45,7 @@ public struct ResolutionRangeCheck: ParameterisedCheck {
             return pass(message: "All images within \(String(format: "%.0f", minThreshold))–\(String(format: "%.0f", maxThreshold)) PPI range")
         }
 
-        let affectedItems = affected.map { AffectedItem.image(id: $0.id, page: $0.pageIndex) }
+        let affectedItems = affected.map { AffectedItem.image(id: $0.id, page: $0.pageIndex, bounds: $0.bounds) }
         let details = affected.map { img in
             let hPPI = img.effectivePPIHorizontal
             let vPPI = img.effectivePPIVertical

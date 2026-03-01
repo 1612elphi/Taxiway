@@ -70,7 +70,40 @@ extension TaxiwayDocument {
             SpotColourInfo(name: "PANTONE 485 C", pagesUsedOn: [0]),
         ]
 
+        let colourUsages = [
+            ColourUsageInfo(
+                id: "cmyk:0,0,0,100",
+                name: "[Black]",
+                colourType: .process,
+                mode: .cmyk,
+                components: [0, 0, 0, 1],
+                inkSum: 100,
+                usageContexts: [.textFill, .pathFill],
+                pagesUsedOn: [0, 1]
+            ),
+            ColourUsageInfo(
+                id: "spot:PANTONE 485 C",
+                name: "PANTONE 485 C",
+                colourType: .spot,
+                mode: .cmyk,
+                components: [1],
+                inkSum: nil,
+                usageContexts: [.pathFill],
+                pagesUsedOn: [0]
+            ),
+        ]
+
         let annotations: [AnnotationInfo] = []
+
+        let textFrames = [
+            TextFrameInfo(
+                id: "txt_0_0",
+                pageIndex: 0,
+                fontName: "ABCDEF+Helvetica-Bold",
+                fontSize: 12.0,
+                bounds: AnnotationBounds(x: 50, y: 700, width: 200, height: 14)
+            ),
+        ]
 
         let metadata = DocumentMetadata(
             title: "Sample Brochure",
@@ -101,7 +134,9 @@ extension TaxiwayDocument {
             images: images,
             colourSpaces: colourSpaces,
             spotColours: spotColours,
+            colourUsages: colourUsages,
             annotations: annotations,
+            textFrames: textFrames,
             metadata: metadata
         )
     }
@@ -111,49 +146,64 @@ extension TaxiwayDocument {
     func withFileInfo(_ transform: (FileInfo) -> FileInfo) -> TaxiwayDocument {
         TaxiwayDocument(fileInfo: transform(fileInfo), documentInfo: documentInfo, pages: pages, fonts: fonts,
                         images: images, colourSpaces: colourSpaces, spotColours: spotColours,
-                        annotations: annotations, metadata: metadata, parseWarnings: parseWarnings)
+                        colourUsages: colourUsages, annotations: annotations, textFrames: textFrames,
+                        metadata: metadata, parseWarnings: parseWarnings)
     }
 
     func withDocumentInfo(_ transform: (DocumentInfo) -> DocumentInfo) -> TaxiwayDocument {
         TaxiwayDocument(fileInfo: fileInfo, documentInfo: transform(documentInfo), pages: pages, fonts: fonts,
                         images: images, colourSpaces: colourSpaces, spotColours: spotColours,
-                        annotations: annotations, metadata: metadata, parseWarnings: parseWarnings)
+                        colourUsages: colourUsages, annotations: annotations, textFrames: textFrames,
+                        metadata: metadata, parseWarnings: parseWarnings)
     }
 
     func withMetadata(_ transform: (DocumentMetadata) -> DocumentMetadata) -> TaxiwayDocument {
         TaxiwayDocument(fileInfo: fileInfo, documentInfo: documentInfo, pages: pages, fonts: fonts,
                         images: images, colourSpaces: colourSpaces, spotColours: spotColours,
-                        annotations: annotations, metadata: transform(metadata), parseWarnings: parseWarnings)
+                        colourUsages: colourUsages, annotations: annotations, textFrames: textFrames,
+                        metadata: transform(metadata), parseWarnings: parseWarnings)
     }
 
     func withAnnotations(_ annotations: [AnnotationInfo]) -> TaxiwayDocument {
         TaxiwayDocument(fileInfo: fileInfo, documentInfo: documentInfo, pages: pages, fonts: fonts,
                         images: images, colourSpaces: colourSpaces, spotColours: spotColours,
-                        annotations: annotations, metadata: metadata, parseWarnings: parseWarnings)
+                        colourUsages: colourUsages, annotations: annotations, textFrames: textFrames,
+                        metadata: metadata, parseWarnings: parseWarnings)
     }
 
     func withColourSpaces(_ spaces: [ColourSpaceInfo]) -> TaxiwayDocument {
         TaxiwayDocument(fileInfo: fileInfo, documentInfo: documentInfo, pages: pages, fonts: fonts,
                         images: images, colourSpaces: spaces, spotColours: spotColours,
-                        annotations: annotations, metadata: metadata, parseWarnings: parseWarnings)
+                        colourUsages: colourUsages, annotations: annotations,
+                        metadata: metadata, parseWarnings: parseWarnings)
     }
 
     func withSpotColours(_ spots: [SpotColourInfo]) -> TaxiwayDocument {
         TaxiwayDocument(fileInfo: fileInfo, documentInfo: documentInfo, pages: pages, fonts: fonts,
                         images: images, colourSpaces: colourSpaces, spotColours: spots,
-                        annotations: annotations, metadata: metadata, parseWarnings: parseWarnings)
+                        colourUsages: colourUsages, annotations: annotations,
+                        metadata: metadata, parseWarnings: parseWarnings)
+    }
+
+    func withColourUsages(_ usages: [ColourUsageInfo]) -> TaxiwayDocument {
+        TaxiwayDocument(fileInfo: fileInfo, documentInfo: documentInfo, pages: pages, fonts: fonts,
+                        images: images, colourSpaces: colourSpaces, spotColours: spotColours,
+                        colourUsages: usages, annotations: annotations, textFrames: textFrames,
+                        metadata: metadata, parseWarnings: parseWarnings)
     }
 
     func withFonts(_ fonts: [FontInfo]) -> TaxiwayDocument {
         TaxiwayDocument(fileInfo: fileInfo, documentInfo: documentInfo, pages: pages, fonts: fonts,
                         images: images, colourSpaces: colourSpaces, spotColours: spotColours,
-                        annotations: annotations, metadata: metadata, parseWarnings: parseWarnings)
+                        colourUsages: colourUsages, annotations: annotations, textFrames: textFrames,
+                        metadata: metadata, parseWarnings: parseWarnings)
     }
 
     func withImages(_ images: [ImageInfo]) -> TaxiwayDocument {
         TaxiwayDocument(fileInfo: fileInfo, documentInfo: documentInfo, pages: pages, fonts: fonts,
                         images: images, colourSpaces: colourSpaces, spotColours: spotColours,
-                        annotations: annotations, metadata: metadata, parseWarnings: parseWarnings)
+                        colourUsages: colourUsages, annotations: annotations, textFrames: textFrames,
+                        metadata: metadata, parseWarnings: parseWarnings)
     }
 
     func withPages(_ pages: [PageInfo]) -> TaxiwayDocument {
@@ -171,7 +221,9 @@ extension TaxiwayDocument {
             images: images,
             colourSpaces: colourSpaces,
             spotColours: spotColours,
+            colourUsages: colourUsages,
             annotations: annotations,
+            textFrames: textFrames,
             metadata: metadata,
             parseWarnings: parseWarnings
         )

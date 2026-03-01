@@ -28,7 +28,7 @@ public struct ICCProfileMissingCheck: ParameterisedCheck {
             return pass(message: "All images have ICC profiles")
         }
 
-        let affectedItems = affected.map { AffectedItem.image(id: $0.id, page: $0.pageIndex) }
+        let affectedItems = affected.map { AffectedItem.image(id: $0.id, page: $0.pageIndex, bounds: $0.bounds) }
         return fail(
             message: "\(affected.count) image(s) missing ICC profile",
             detail: "Affected: \(affected.map(\.id).joined(separator: ", "))",

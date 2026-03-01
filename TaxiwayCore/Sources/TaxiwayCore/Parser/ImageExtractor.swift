@@ -31,18 +31,31 @@ struct ImageExtractor: Sendable {
 
             let pageIndex = i
 
+            // Scan the content stream for image placements (CTM-derived bounds)
+            let placements = ContentStreamImageScanner.scan(page: pageRef)
+            // Build a lookup: XObject name -> placement
+            var placementsByName: [String: ContentStreamImageScanner.ImagePlacement] = [:]
+            for p in placements {
+                // If an image is placed multiple times, keep the first placement
+                if placementsByName[p.name] == nil {
+                    placementsByName[p.name] = p
+                }
+            }
+
             final class Collector: @unchecked Sendable {
                 var images: [ImageInfo] = []
                 var warnings: [ParseWarning] = []
                 var counter: Int
                 let pageIndex: Int
-                init(counter: Int, pageIndex: Int) {
+                let placements: [String: ContentStreamImageScanner.ImagePlacement]
+                init(counter: Int, pageIndex: Int, placements: [String: ContentStreamImageScanner.ImagePlacement]) {
                     self.counter = counter
                     self.pageIndex = pageIndex
+                    self.placements = placements
                 }
             }
 
-            let collector = Collector(counter: imageCounter, pageIndex: pageIndex)
+            let collector = Collector(counter: imageCounter, pageIndex: pageIndex, placements: placementsByName)
             let context = Unmanaged.passUnretained(collector).toOpaque()
 
             CGPDFDictionaryApplyBlock(xobjects, { (key, value, info) -> Bool in
@@ -87,12 +100,15 @@ struct ImageExtractor: Sendable {
                 // Check ICC profile
                 let hasICC = checkICCProfile(from: dict)
 
+                let resourceName = String(cString: key)
                 let imageId = "img_\(collector.pageIndex)_\(collector.counter)"
                 collector.counter += 1
 
-                // Use pixel dimensions as points (1:1 approximation)
-                let effectiveWidth = Double(width)
-                let effectiveHeight = Double(height)
+                // Use content stream placement data if available
+                let placement = collector.placements[resourceName]
+                let effectiveWidth = placement?.widthPoints ?? Double(width)
+                let effectiveHeight = placement?.heightPoints ?? Double(height)
+                let bounds = placement?.bounds
 
                 collector.images.append(ImageInfo(
                     id: imageId,
@@ -108,7 +124,8 @@ struct ImageExtractor: Sendable {
                     hasICCOverride: false,
                     hasAlphaChannel: hasAlpha,
                     blendMode: .normal,
-                    opacity: 1.0
+                    opacity: 1.0,
+                    bounds: bounds
                 ))
 
                 return true
