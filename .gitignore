@@ -13,3 +13,9 @@ DerivedData/
 
 # Worktrees
 .worktrees/
+
+# Vendor (built Ghostscript binary)
+vendor/
+
+# Ghostscript build artifacts
+.gs-build/

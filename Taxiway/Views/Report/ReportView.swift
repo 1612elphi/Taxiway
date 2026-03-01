@@ -2,49 +2,84 @@ import SwiftUI
 import TaxiwayCore
 
 struct ReportView: View {
+    let session: PreflightSession
     let report: PreflightReport
 
-    @Environment(AppCoordinator.self) var coordinator
     @State private var selectedResult: CheckResult?
-    @State private var showInspector = false
+    @State private var showInspector = true
+    @State private var inspectorHighlight: [AffectedItem]?
+    @State private var showFixQueue = false
 
     var body: some View {
-        VStack(spacing: 0) {
-            StatusHeaderView(report: report)
+        NavigationSplitView {
+            VStack(spacing: 0) {
+                SolariStatusView(outcome: report.displayOutcome)
+                    .padding(TaxiwayTheme.panelPadding)
 
-            Divider()
+                ReportMetadataView(report: report)
 
-            NavigationSplitView {
-                VStack(spacing: 0) {
-                    CategoryTilesView(results: report.results)
-                        .padding(.vertical, TaxiwayTheme.panelPadding)
+                Divider()
 
-                    Divider()
+                CategoryTilesView(results: report.results)
+                    .padding(.vertical, TaxiwayTheme.panelPadding)
 
-                    ResultsListView(
-                        results: report.results,
-                        selectedResult: $selectedResult
-                    )
+                Divider()
+
+                ResultsListView(
+                    results: report.results,
+                    session: session,
+                    selectedResult: $selectedResult
+                )
+            }
+            .navigationSplitViewColumnWidth(min: 240, ideal: 280, max: 360)
+        } detail: {
+            PDFPreviewView(
+                pdfURL: report.documentURL,
+                affectedItems: activeHighlightItems,
+                highlightColor: activeHighlightColor
+            )
+        }
+        .inspector(isPresented: $showInspector) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: TaxiwayTheme.sectionSpacing) {
+                    if let selected = selectedResult {
+                        ResultDetailView(result: selected, session: session)
+                        Divider()
+                    }
+                    InspectorView(document: report.documentSnapshot) { items in
+                        inspectorHighlight = items
+                    }
                 }
-                .navigationSplitViewColumnWidth(min: 240, ideal: 280, max: 360)
-            } detail: {
-                if let selected = selectedResult {
-                    ResultDetailView(result: selected, pdfURL: report.documentURL)
-                } else {
-                    ContentUnavailableView(
-                        "Select a Check",
-                        systemImage: "checklist",
-                        description: Text("Choose a check result from the sidebar to view details.")
-                    )
-                }
+                .padding(TaxiwayTheme.panelPadding)
+            }
+            .inspectorColumnWidth(min: 280, ideal: 320, max: 400)
+        }
+        .onChange(of: selectedResult) { _, _ in
+            inspectorHighlight = nil
+        }
+        .overlay {
+            if session.isFixing {
+                fixProgressOverlay
             }
         }
+        .alert("Fix Error", isPresented: Binding(
+            get: { session.fixError != nil },
+            set: { if !$0 { session.fixError = nil } }
+        )) {
+            Button("OK") { session.fixError = nil }
+        } message: {
+            Text(session.fixError ?? "")
+        }
         .toolbar {
-            ToolbarItem(placement: .navigation) {
+            ToolbarItem(placement: .primaryAction) {
                 Button {
-                    coordinator.backToDashboard()
+                    showFixQueue.toggle()
                 } label: {
-                    Label("Back", systemImage: "chevron.left")
+                    Label("Fix Queue", systemImage: "wrench")
+                }
+                .badge(session.fixQueue.count)
+                .popover(isPresented: $showFixQueue) {
+                    FixQueueView(session: session)
                 }
             }
 
@@ -60,9 +95,45 @@ struct ReportView: View {
                 ExportControlsView(report: report)
             }
         }
-        .inspector(isPresented: $showInspector) {
-            InspectorView(document: report.documentSnapshot)
-                .inspectorColumnWidth(min: 280, ideal: 320, max: 400)
+    }
+
+    // MARK: - Highlight Resolution
+
+    private var activeHighlightItems: [AffectedItem] {
+        inspectorHighlight ?? selectedResult?.affectedItems ?? []
+    }
+
+    private var activeHighlightColor: Color {
+        if inspectorHighlight != nil {
+            return .blue
+        }
+        guard let result = selectedResult else { return .clear }
+        switch result.status {
+        case .fail: return TaxiwayTheme.statusError
+        case .warning: return TaxiwayTheme.statusWarning
+        case .pass: return TaxiwayTheme.statusPass
+        case .skipped: return TaxiwayTheme.statusSkipped
+        }
+    }
+
+    // MARK: - Fix Progress Overlay
+
+    @ViewBuilder
+    private var fixProgressOverlay: some View {
+        ZStack {
+            Rectangle()
+                .fill(.ultraThinMaterial)
+                .ignoresSafeArea()
+
+            VStack(spacing: 16) {
+                ProgressView()
+                    .controlSize(.large)
+                Text(session.fixProgress ?? "Applying fixes...")
+                    .font(TaxiwayTheme.monoFont)
+                    .foregroundStyle(.secondary)
+            }
+            .padding(40)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
         }
     }
 }

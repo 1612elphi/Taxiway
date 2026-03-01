@@ -3,7 +3,10 @@ import TaxiwayCore
 
 struct ResultsListView: View {
     let results: [CheckResult]
+    let session: PreflightSession
     @Binding var selectedResult: CheckResult?
+
+    private let fixRegistry = FixRegistry.default
 
     var body: some View {
         List(sortedResults, selection: Binding(
@@ -23,6 +26,21 @@ struct ResultsListView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .lineLimit(2)
+                }
+
+                Spacer()
+
+                if result.status == .fail, let fix = fixRegistry.availableFix(for: result.checkTypeID) {
+                    let queued = session.fixQueue.isQueued(fix.id)
+                    Button {
+                        session.fixQueue.toggleFix(fix, for: [result])
+                    } label: {
+                        Image(systemName: queued ? "wrench.fill" : "wrench")
+                            .foregroundStyle(queued ? .orange : .secondary)
+                            .font(.caption)
+                    }
+                    .buttonStyle(.plain)
+                    .help(queued ? "Remove \(fix.name) from queue" : "Add \(fix.name) to queue")
                 }
             }
             .tag(result.id)

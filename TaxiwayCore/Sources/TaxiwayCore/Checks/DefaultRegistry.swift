@@ -22,6 +22,7 @@ extension CheckRegistry {
         registry.register(RichBlackCheck.self)
         registry.register(SpotColourCountCheck.self)
         registry.register(SpotColourUsedCheck.self)
+        registry.register(TextColourModeCheck.self)
         registry.register(UnnamedSpotColourCheck.self)
 
         // Fonts

@@ -14,9 +14,22 @@
 		9BC0F82E2F536A7B00E614D5 /* Taxiway.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Taxiway.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		74EB0F664AFEF03A8348F052 /* Exceptions for "Taxiway" folder in "Taxiway" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 9BC0F82D2F536A7B00E614D5 /* Taxiway */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		9BC0F8302F536A7B00E614D5 /* Taxiway */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				74EB0F664AFEF03A8348F052 /* Exceptions for "Taxiway" folder in "Taxiway" target */,
+			);
 			path = Taxiway;
 			sourceTree = "<group>";
 		};
@@ -60,6 +73,7 @@
 				9BC0F82A2F536A7B00E614D5 /* Sources */,
 				9BC0F82B2F536A7B00E614D5 /* Frameworks */,
 				9BC0F82C2F536A7B00E614D5 /* Resources */,
+				9BF1A0012F63000000E614D5 /* Copy Ghostscript */,
 			);
 			buildRules = (
 			);
@@ -100,13 +114,13 @@
 			);
 			mainGroup = 9BC0F8252F536A7B00E614D5;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				9B82486C2F53A31C00519D37 /* XCLocalSwiftPackageReference "TaxiwayCore" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 9BC0F82F2F536A7B00E614D5 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
-			packages = (
-				9BC0F8402F536B0000E614D5 /* XCLocalSwiftPackageReference "TaxiwayCore" */,
-			);
 			targets = (
 				9BC0F82D2F536A7B00E614D5 /* Taxiway */,
 			);
@@ -123,6 +137,7 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+
 /* Begin PBXSourcesBuildPhase section */
 		9BC0F82A2F536A7B00E614D5 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -132,6 +147,25 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		9BF1A0012F63000000E614D5 /* Copy Ghostscript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/vendor/gs/bin/gs",
+			);
+			name = "Copy Ghostscript";
+			outputPaths = (
+				"$(BUILT_PRODUCTS_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/gs/bin/gs",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "GS_SOURCE=\"${SRCROOT}/vendor/gs\"\nGS_DEST=\"${BUILT_PRODUCTS_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/gs\"\n\nif [ -d \"$GS_SOURCE\" ]; then\n    rm -rf \"$GS_DEST\"\n    cp -R \"$GS_SOURCE\" \"$GS_DEST\"\nelse\n    echo \"warning: Ghostscript not found at $GS_SOURCE\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
 		9BC0F8392F536A7C00E614D5 /* Debug */ = {
@@ -172,7 +206,7 @@
 				DEVELOPMENT_TEAM = 57GK6H2C5W;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -236,7 +270,7 @@
 				DEVELOPMENT_TEAM = 57GK6H2C5W;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -263,12 +297,13 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 57GK6H2C5W;
-				ENABLE_APP_SANDBOX = YES;
+				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SELECTED_FILES = readonly;
+				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_FILE = Taxiway/Info.plist;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Public domain. Created by Ruby Morgan Voigt";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -295,12 +330,13 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 57GK6H2C5W;
-				ENABLE_APP_SANDBOX = YES;
+				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SELECTED_FILES = readonly;
+				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_FILE = Taxiway/Info.plist;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Public domain. Created by Ruby Morgan Voigt";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -342,6 +378,10 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
+		9B82486C2F53A31C00519D37 /* XCLocalSwiftPackageReference "TaxiwayCore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = TaxiwayCore;
+		};
 		9BC0F8402F536B0000E614D5 /* XCLocalSwiftPackageReference "TaxiwayCore" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = TaxiwayCore;
