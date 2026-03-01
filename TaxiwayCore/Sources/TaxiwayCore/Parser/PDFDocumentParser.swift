@@ -36,6 +36,8 @@ public struct PDFDocumentParser: Sendable {
         let (colourUsages, overprintUsages) = extractColourUsagesAndOverprints(from: pdfDoc)
         let annotations = AnnotationExtractor.extract(from: pdfDoc, warnings: &warnings)
         let textFrames = extractTextFrames(from: pdfDoc)
+        let strokeInfos = extractStrokeInfos(from: pdfDoc)
+        let gradientSpotColours = ShadingExtractor.extract(from: pdfDoc)
         let metadata = MetadataExtractor.extract(from: pdfDoc, warnings: &warnings)
 
         return TaxiwayDocument(
@@ -50,6 +52,8 @@ public struct PDFDocumentParser: Sendable {
             annotations: annotations,
             textFrames: textFrames,
             overprintUsages: overprintUsages,
+            strokeInfos: strokeInfos,
+            gradientSpotColours: gradientSpotColours,
             metadata: metadata,
             parseWarnings: warnings
         )
@@ -225,6 +229,22 @@ public struct PDFDocumentParser: Sendable {
         }
 
         return frames
+    }
+
+    // MARK: - Stroke Infos
+
+    private func extractStrokeInfos(from pdfDoc: PDFDocument) -> [StrokeInfo] {
+        var rawRecords: [ContentStreamStrokeScanner.StrokeRecord] = []
+
+        for i in 0..<pdfDoc.pageCount {
+            guard let page = pdfDoc.page(at: i),
+                  let pageRef = page.pageRef else { continue }
+
+            let pageRecords = ContentStreamStrokeScanner.scan(page: pageRef, pageIndex: i)
+            rawRecords.append(contentsOf: pageRecords)
+        }
+
+        return ContentStreamStrokeScanner.deduplicate(rawRecords)
     }
 
     // MARK: - Transparency Detection

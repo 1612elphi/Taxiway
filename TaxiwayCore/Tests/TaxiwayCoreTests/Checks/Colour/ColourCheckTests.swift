@@ -607,4 +607,66 @@ struct ColourCheckTests {
             #expect(check.defaultSeverity == .warning)
         }
     }
+
+    // MARK: - NamedColourGradientCheck
+
+    @Suite("NamedColourGradientCheck")
+    struct NamedColourGradientCheckTests {
+
+        @Test("Passes when no gradient spot colours")
+        func passNoGradientSpots() {
+            let check = NamedColourGradientCheck()
+            let result = check.run(on: .sample)
+
+            #expect(result.status == .pass)
+            #expect(result.message.contains("No named colours"))
+        }
+
+        @Test("Fails when gradient spot colours exist")
+        func failGradientSpots() {
+            let doc = TaxiwayDocument.sample.withGradientSpotColours([
+                SpotColourInfo(name: "PANTONE 485 C", pagesUsedOn: [0]),
+            ])
+            let check = NamedColourGradientCheck()
+            let result = check.run(on: doc)
+
+            #expect(result.status == .fail)
+            #expect(result.message.contains("1 named colour"))
+            #expect(result.detail!.contains("PANTONE 485 C"))
+            #expect(result.affectedItems == [.page(index: 0)])
+        }
+
+        @Test("Reports multiple gradient spot colours")
+        func multipleSpots() {
+            let doc = TaxiwayDocument.sample.withGradientSpotColours([
+                SpotColourInfo(name: "PANTONE 485 C", pagesUsedOn: [0]),
+                SpotColourInfo(name: "PANTONE 300 C", pagesUsedOn: [0, 1]),
+            ])
+            let check = NamedColourGradientCheck()
+            let result = check.run(on: doc)
+
+            #expect(result.status == .fail)
+            #expect(result.message.contains("2"))
+            #expect(result.affectedItems.count == 2)
+        }
+
+        @Test("Passes on empty document")
+        func passEmptyDocument() {
+            let check = NamedColourGradientCheck()
+            let result = check.run(on: .empty)
+
+            #expect(result.status == .pass)
+        }
+
+        @Test("TypeID is colour.named_gradient")
+        func typeID() {
+            #expect(NamedColourGradientCheck.typeID == "colour.named_gradient")
+        }
+
+        @Test("Default severity is warning")
+        func defaultSeverity() {
+            let check = NamedColourGradientCheck()
+            #expect(check.defaultSeverity == .warning)
+        }
+    }
 }

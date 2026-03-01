@@ -5,10 +5,10 @@ import Foundation
 @Suite("DefaultRegistry")
 struct DefaultRegistryTests {
 
-    @Test("Default registry contains all 49 check types")
+    @Test("Default registry contains all 50 check types")
     func registryContainsAllCheckTypes() {
         let registry = CheckRegistry.default
-        #expect(registry.registeredTypeIDs.count >= 49)
+        #expect(registry.registeredTypeIDs.count >= 50)
     }
 
     @Test("Default registry contains every expected typeID")
@@ -31,6 +31,7 @@ struct DefaultRegistryTests {
         #expect(ids.contains("colour.registration"))
         #expect(ids.contains("colour.spot_count"))
         #expect(ids.contains("colour.spot_used"))
+        #expect(ids.contains("colour.named_gradient"))
         #expect(ids.contains("colour.overprint"))
         #expect(ids.contains("colour.unnamed_spot"))
 

@@ -16,6 +16,7 @@ extension CheckRegistry {
         // Colour
         registry.register(ColourSpaceUsedCheck.self)
         registry.register(InkCoverageCheck.self)
+        registry.register(NamedColourGradientCheck.self)
         registry.register(OverprintCheck.self)
         registry.register(RegistrationColourCheck.self)
         registry.register(RichBlackCheck.self)

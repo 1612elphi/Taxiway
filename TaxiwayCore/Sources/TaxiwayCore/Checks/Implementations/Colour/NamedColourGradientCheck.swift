@@ -1,13 +1,13 @@
 import Foundation
 
-public struct ZeroWidthStrokeCheck: ParameterisedCheck {
-    public static let typeID = "lines.zero_width"
+public struct NamedColourGradientCheck: ParameterisedCheck {
+    public static let typeID = "colour.named_gradient"
     public let id: UUID
     public let parameters: EmptyParameters
     public let severityOverride: CheckSeverity?
 
-    public var name: String { "Zero-Width Strokes" }
-    public var category: CheckCategory { .lines }
+    public var name: String { "Named Colour in Gradient" }
+    public var category: CheckCategory { .colour }
     public var defaultSeverity: CheckSeverity { .warning }
 
     public init(id: UUID = UUID(), parameters: EmptyParameters = EmptyParameters(), severityOverride: CheckSeverity? = nil) {
@@ -17,17 +17,18 @@ public struct ZeroWidthStrokeCheck: ParameterisedCheck {
     }
 
     public func run(on document: TaxiwayDocument) -> CheckResult {
-        let zeroWidth = document.strokeInfos.filter { $0.lineWidth == 0 }
+        let spots = document.gradientSpotColours
 
-        if zeroWidth.isEmpty {
-            return pass(message: "No zero-width strokes detected")
+        if spots.isEmpty {
+            return pass(message: "No named colours used in gradients")
         }
 
-        let pages = Set(zeroWidth.map(\.pageIndex)).sorted()
+        let names = spots.map(\.name).sorted()
+        let pages = Set(spots.flatMap(\.pagesUsedOn)).sorted()
 
         return fail(
-            message: "\(zeroWidth.count) zero-width stroke(s) detected",
-            detail: "Found on: \(pages.map { "page \($0 + 1)" }.joined(separator: ", "))",
+            message: "\(spots.count) named colour(s) used in gradients",
+            detail: names.joined(separator: ", "),
             affectedItems: pages.map { .page(index: $0) }
         )
     }

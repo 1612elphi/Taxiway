@@ -7,30 +7,72 @@ import Foundation
 @Suite("StrokeWeightBelowCheck")
 struct StrokeWeightBelowCheckTests {
 
-    @Test("Always returns skipped")
-    func alwaysSkipped() {
+    @Test("Passes when no strokes below threshold")
+    func passNoThinStrokes() {
+        let doc = TaxiwayDocument.sample.withStrokeInfos([
+            StrokeInfo(pageIndex: 0, lineWidth: 1.0),
+            StrokeInfo(pageIndex: 1, lineWidth: 0.5),
+        ])
+        let check = StrokeWeightBelowCheck(parameters: .init(thresholdPt: 0.25))
+        let result = check.run(on: doc)
+
+        #expect(result.status == .pass)
+        #expect(result.message.contains("0.250"))
+    }
+
+    @Test("Fails when strokes below threshold")
+    func failThinStrokes() {
+        let doc = TaxiwayDocument.sample.withStrokeInfos([
+            StrokeInfo(pageIndex: 0, lineWidth: 0.1),
+            StrokeInfo(pageIndex: 1, lineWidth: 1.0),
+        ])
+        let check = StrokeWeightBelowCheck(parameters: .init(thresholdPt: 0.25))
+        let result = check.run(on: doc)
+
+        #expect(result.status == .fail)
+        #expect(result.message.contains("1 stroke"))
+        #expect(result.detail!.contains("0.100"))
+        #expect(result.affectedItems == [.page(index: 0)])
+    }
+
+    @Test("Ignores zero-width strokes")
+    func ignoresZeroWidth() {
+        let doc = TaxiwayDocument.sample.withStrokeInfos([
+            StrokeInfo(pageIndex: 0, lineWidth: 0.0),
+        ])
+        let check = StrokeWeightBelowCheck(parameters: .init(thresholdPt: 0.25))
+        let result = check.run(on: doc)
+
+        #expect(result.status == .pass)
+    }
+
+    @Test("Reports multiple pages with thin strokes")
+    func multiplePages() {
+        let doc = TaxiwayDocument.sample.withStrokeInfos([
+            StrokeInfo(pageIndex: 0, lineWidth: 0.1),
+            StrokeInfo(pageIndex: 1, lineWidth: 0.2),
+        ])
+        let check = StrokeWeightBelowCheck(parameters: .init(thresholdPt: 0.25))
+        let result = check.run(on: doc)
+
+        #expect(result.status == .fail)
+        #expect(result.affectedItems.count == 2)
+    }
+
+    @Test("Passes on empty document")
+    func passEmptyDocument() {
+        let check = StrokeWeightBelowCheck(parameters: .init(thresholdPt: 0.25))
+        let result = check.run(on: .empty)
+
+        #expect(result.status == .pass)
+    }
+
+    @Test("Passes on sample document (no stroke infos)")
+    func passSampleDocument() {
         let check = StrokeWeightBelowCheck(parameters: .init(thresholdPt: 0.25))
         let result = check.run(on: .sample)
 
-        #expect(result.status == .skipped)
-        #expect(result.message.contains("content stream parsing"))
-    }
-
-    @Test("Returns skipped on empty document")
-    func skippedEmptyDocument() {
-        let check = StrokeWeightBelowCheck(parameters: .init(thresholdPt: 0.5))
-        let result = check.run(on: .empty)
-
-        #expect(result.status == .skipped)
-    }
-
-    @Test("Returns skipped regardless of threshold value")
-    func skippedAnyThreshold() {
-        let check = StrokeWeightBelowCheck(parameters: .init(thresholdPt: 100.0))
-        let result = check.run(on: .sample)
-
-        #expect(result.status == .skipped)
-        #expect(result.message.contains("deferred"))
+        #expect(result.status == .pass)
     }
 
     @Test("Default severity is warning")
@@ -56,30 +98,60 @@ struct StrokeWeightBelowCheckTests {
 @Suite("ZeroWidthStrokeCheck")
 struct ZeroWidthStrokeCheckTests {
 
-    @Test("Always returns skipped")
-    func alwaysSkipped() {
+    @Test("Passes when no zero-width strokes")
+    func passNoZeroWidth() {
+        let doc = TaxiwayDocument.sample.withStrokeInfos([
+            StrokeInfo(pageIndex: 0, lineWidth: 0.5),
+            StrokeInfo(pageIndex: 1, lineWidth: 1.0),
+        ])
         let check = ZeroWidthStrokeCheck()
-        let result = check.run(on: .sample)
+        let result = check.run(on: doc)
 
-        #expect(result.status == .skipped)
-        #expect(result.message.contains("content stream parsing"))
+        #expect(result.status == .pass)
+        #expect(result.message.contains("No zero-width"))
     }
 
-    @Test("Returns skipped on empty document")
-    func skippedEmptyDocument() {
+    @Test("Fails when zero-width strokes exist")
+    func failZeroWidth() {
+        let doc = TaxiwayDocument.sample.withStrokeInfos([
+            StrokeInfo(pageIndex: 0, lineWidth: 0.0),
+            StrokeInfo(pageIndex: 1, lineWidth: 1.0),
+        ])
+        let check = ZeroWidthStrokeCheck()
+        let result = check.run(on: doc)
+
+        #expect(result.status == .fail)
+        #expect(result.message.contains("1 zero-width"))
+        #expect(result.affectedItems == [.page(index: 0)])
+    }
+
+    @Test("Reports multiple pages with zero-width strokes")
+    func multiplePages() {
+        let doc = TaxiwayDocument.sample.withStrokeInfos([
+            StrokeInfo(pageIndex: 0, lineWidth: 0.0),
+            StrokeInfo(pageIndex: 1, lineWidth: 0.0),
+        ])
+        let check = ZeroWidthStrokeCheck()
+        let result = check.run(on: doc)
+
+        #expect(result.status == .fail)
+        #expect(result.affectedItems.count == 2)
+    }
+
+    @Test("Passes on empty document")
+    func passEmptyDocument() {
         let check = ZeroWidthStrokeCheck()
         let result = check.run(on: .empty)
 
-        #expect(result.status == .skipped)
+        #expect(result.status == .pass)
     }
 
-    @Test("Skipped message mentions deferred")
-    func skippedMessageContent() {
+    @Test("Passes on sample document (no stroke infos)")
+    func passSampleDocument() {
         let check = ZeroWidthStrokeCheck()
         let result = check.run(on: .sample)
 
-        #expect(result.message.contains("deferred"))
-        #expect(result.message.contains("Zero-width"))
+        #expect(result.status == .pass)
     }
 
     @Test("Default severity is warning")
