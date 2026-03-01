@@ -5,10 +5,10 @@ import Foundation
 @Suite("DefaultRegistry")
 struct DefaultRegistryTests {
 
-    @Test("Default registry contains all 47 check types")
+    @Test("Default registry contains all 49 check types")
     func registryContainsAllCheckTypes() {
         let registry = CheckRegistry.default
-        #expect(registry.registeredTypeIDs.count >= 47)
+        #expect(registry.registeredTypeIDs.count >= 49)
     }
 
     @Test("Default registry contains every expected typeID")
@@ -31,6 +31,7 @@ struct DefaultRegistryTests {
         #expect(ids.contains("colour.registration"))
         #expect(ids.contains("colour.spot_count"))
         #expect(ids.contains("colour.spot_used"))
+        #expect(ids.contains("colour.overprint"))
         #expect(ids.contains("colour.unnamed_spot"))
 
         // Fonts
@@ -79,6 +80,7 @@ struct DefaultRegistryTests {
         #expect(ids.contains("pdf.conformance"))
         #expect(ids.contains("pdf.version"))
         #expect(ids.contains("pdf.tagged"))
+        #expect(ids.contains("pdf.transparency"))
     }
 
     @Test("Every PDF/X-1a entry can be instantiated from default registry")

@@ -18,6 +18,14 @@ struct ContentStreamColourScanner: Sendable {
 
     typealias ColourSpaceLookup = [String: ColourSpaceEntry]
 
+    /// Resolved ExtGState entry for overprint state.
+    struct ExtGStateEntry: Sendable {
+        let overprintFill: Bool?
+        let overprintStroke: Bool?
+    }
+
+    typealias ExtGStateLookup = [String: ExtGStateEntry]
+
     /// A raw colour usage recorded during scanning, before deduplication.
     struct RawColourUsage: Sendable {
         let mode: ColourMode
@@ -26,6 +34,7 @@ struct ContentStreamColourScanner: Sendable {
         let spotName: String?
         let context: ColourUsageContext
         let pageIndex: Int
+        let overprintEnabled: Bool
     }
 
     // MARK: - Colour Space Lookup
@@ -142,11 +151,62 @@ struct ContentStreamColourScanner: Sendable {
         return collector.lookup
     }
 
+    // MARK: - ExtGState Lookup
+
+    /// Builds a lookup table for ExtGState entries (overprint flags) on a page.
+    static func buildExtGStateLookup(pageRef: CGPDFPage) -> ExtGStateLookup {
+        guard let pageDict = pageRef.dictionary else { return [:] }
+
+        var resourcesDict: CGPDFDictionaryRef?
+        guard CGPDFDictionaryGetDictionary(pageDict, "Resources", &resourcesDict),
+              let resources = resourcesDict else { return [:] }
+
+        var gsDict: CGPDFDictionaryRef?
+        guard CGPDFDictionaryGetDictionary(resources, "ExtGState", &gsDict),
+              let extGState = gsDict else { return [:] }
+
+        final class GSCollector: @unchecked Sendable {
+            var lookup: ExtGStateLookup = [:]
+        }
+
+        let collector = GSCollector()
+        let context = Unmanaged.passUnretained(collector).toOpaque()
+
+        CGPDFDictionaryApplyBlock(extGState, { (key, value, info) -> Bool in
+            let collector = Unmanaged<GSCollector>.fromOpaque(info!).takeUnretainedValue()
+            let name = String(cString: key)
+
+            var dict: CGPDFDictionaryRef?
+            guard CGPDFObjectGetValue(value, .dictionary, &dict), let gs = dict else { return true }
+
+            // OP = overprint for stroke (and fill if op not present)
+            // op = overprint for fill
+            var opStroke: CGPDFBoolean = 0
+            let hasOP = CGPDFDictionaryGetBoolean(gs, "OP", &opStroke)
+
+            var opFill: CGPDFBoolean = 0
+            let hasop = CGPDFDictionaryGetBoolean(gs, "op", &opFill)
+
+            if hasOP || hasop {
+                let strokeOverprint = hasOP ? (opStroke != 0) : nil
+                // Per PDF spec: if op is absent, fill overprint defaults to OP value
+                let fillOverprint: Bool? = hasop ? (opFill != 0) : strokeOverprint
+                collector.lookup[name] = ExtGStateEntry(
+                    overprintFill: fillOverprint, overprintStroke: strokeOverprint)
+            }
+
+            return true
+        }, context)
+
+        return collector.lookup
+    }
+
     // MARK: - Scan
 
     /// Scan a page's content stream for colour usage.
     static func scan(page pageRef: CGPDFPage, pageIndex: Int,
-                     lookup: ColourSpaceLookup) -> [RawColourUsage] {
+                     lookup: ColourSpaceLookup,
+                     extGStateLookup: ExtGStateLookup = [:]) -> [RawColourUsage] {
         let contentStream = CGPDFContentStreamCreateWithPage(pageRef)
         defer { CGPDFContentStreamRelease(contentStream) }
 
@@ -161,6 +221,14 @@ struct ContentStreamColourScanner: Sendable {
         CGPDFOperatorTableSetCallback(table, "Q") { _, info in
             let ctx = Unmanaged<ScanContext>.fromOpaque(info!).takeUnretainedValue()
             ctx.restoreState()
+        }
+
+        // gs - set graphics state from ExtGState resource
+        CGPDFOperatorTableSetCallback(table, "gs") { scanner, info in
+            let ctx = Unmanaged<ScanContext>.fromOpaque(info!).takeUnretainedValue()
+            var namePtr: UnsafePointer<CChar>?
+            guard CGPDFScannerPopName(scanner, &namePtr), let name = namePtr else { return }
+            ctx.applyExtGState(name: String(cString: name))
         }
 
         // --- Device colour operators ---
@@ -348,7 +416,7 @@ struct ContentStreamColourScanner: Sendable {
             ctx.recordUsage(context: .pathStroke, isFill: false)
         }
 
-        let scanCtx = ScanContext(pageIndex: pageIndex, lookup: lookup)
+        let scanCtx = ScanContext(pageIndex: pageIndex, lookup: lookup, extGStateLookup: extGStateLookup)
         let contextPtr = Unmanaged.passUnretained(scanCtx).toOpaque()
 
         let pdfScanner = CGPDFScannerCreate(contentStream, table, contextPtr)
@@ -430,6 +498,7 @@ struct ContentStreamColourScanner: Sendable {
 private final class ScanContext: @unchecked Sendable {
     let pageIndex: Int
     let lookup: ContentStreamColourScanner.ColourSpaceLookup
+    let extGStateLookup: ContentStreamColourScanner.ExtGStateLookup
 
     /// Colour state: (mode, components, isSpot, spotName)
     struct ColourState {
@@ -445,6 +514,8 @@ private final class ScanContext: @unchecked Sendable {
         var strokeColour: ColourState
         var fillSpaceName: String?
         var strokeSpaceName: String?
+        var overprintFill: Bool = false
+        var overprintStroke: Bool = false
     }
 
     private var stateStack: [GraphicsState] = []
@@ -452,9 +523,11 @@ private final class ScanContext: @unchecked Sendable {
 
     var usages: [ContentStreamColourScanner.RawColourUsage] = []
 
-    init(pageIndex: Int, lookup: ContentStreamColourScanner.ColourSpaceLookup) {
+    init(pageIndex: Int, lookup: ContentStreamColourScanner.ColourSpaceLookup,
+         extGStateLookup: ContentStreamColourScanner.ExtGStateLookup = [:]) {
         self.pageIndex = pageIndex
         self.lookup = lookup
+        self.extGStateLookup = extGStateLookup
         // Default graphics state: DeviceGray black fill, DeviceGray black stroke
         let defaultColour = ColourState(mode: .gray, components: [0], isSpot: false, spotName: nil, spaceName: nil)
         self.currentState = GraphicsState(
@@ -575,15 +648,27 @@ private final class ScanContext: @unchecked Sendable {
         }
     }
 
+    func applyExtGState(name: String) {
+        guard let entry = extGStateLookup[name] else { return }
+        if let fill = entry.overprintFill {
+            currentState.overprintFill = fill
+        }
+        if let stroke = entry.overprintStroke {
+            currentState.overprintStroke = stroke
+        }
+    }
+
     func recordUsage(context: ColourUsageContext, isFill: Bool) {
         let colour = isFill ? currentState.fillColour : currentState.strokeColour
+        let overprintEnabled = isFill ? currentState.overprintFill : currentState.overprintStroke
         usages.append(ContentStreamColourScanner.RawColourUsage(
             mode: colour.mode,
             components: colour.components,
             isSpot: colour.isSpot,
             spotName: colour.spotName,
             context: context,
-            pageIndex: pageIndex
+            pageIndex: pageIndex,
+            overprintEnabled: overprintEnabled
         ))
     }
 }

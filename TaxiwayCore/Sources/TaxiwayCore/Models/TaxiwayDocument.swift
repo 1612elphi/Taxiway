@@ -11,6 +11,9 @@ public struct TaxiwayDocument: Codable, Sendable, Equatable {
     public let colourUsages: [ColourUsageInfo]
     public let annotations: [AnnotationInfo]
     public let textFrames: [TextFrameInfo]
+    public let overprintUsages: [OverprintInfo]
+    public let strokeInfos: [StrokeInfo]
+    public let gradientSpotColours: [SpotColourInfo]
     public let metadata: DocumentMetadata
     public let parseWarnings: [ParseWarning]
 
@@ -18,6 +21,8 @@ public struct TaxiwayDocument: Codable, Sendable, Equatable {
                 images: [ImageInfo], colourSpaces: [ColourSpaceInfo], spotColours: [SpotColourInfo],
                 colourUsages: [ColourUsageInfo] = [], annotations: [AnnotationInfo],
                 textFrames: [TextFrameInfo] = [],
+                overprintUsages: [OverprintInfo] = [], strokeInfos: [StrokeInfo] = [],
+                gradientSpotColours: [SpotColourInfo] = [],
                 metadata: DocumentMetadata, parseWarnings: [ParseWarning] = []) {
         self.fileInfo = fileInfo
         self.documentInfo = documentInfo
@@ -29,6 +34,9 @@ public struct TaxiwayDocument: Codable, Sendable, Equatable {
         self.colourUsages = colourUsages
         self.annotations = annotations
         self.textFrames = textFrames
+        self.overprintUsages = overprintUsages
+        self.strokeInfos = strokeInfos
+        self.gradientSpotColours = gradientSpotColours
         self.metadata = metadata
         self.parseWarnings = parseWarnings
     }

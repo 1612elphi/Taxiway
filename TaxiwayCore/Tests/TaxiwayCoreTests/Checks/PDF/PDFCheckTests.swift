@@ -400,3 +400,70 @@ struct AllTextOutlinedCheckTests {
         #expect(check.defaultSeverity == .info)
     }
 }
+
+// MARK: - TransparencyCheck
+
+@Suite("TransparencyCheck")
+struct TransparencyCheckTests {
+
+    @Test("Passes when no transparency with operator .is")
+    func passNoTransparencyIs() {
+        // Sample has transparencyDetected: false (default)
+        let check = TransparencyCheck(parameters: .init(operator: .is))
+        let result = check.run(on: .sample)
+
+        #expect(result.status == .pass)
+        #expect(result.message.contains("No transparency"))
+    }
+
+    @Test("Fails when transparency detected with operator .is")
+    func failTransparencyIs() {
+        let doc = TaxiwayDocument.sample.withDocumentInfo { info in
+            DocumentInfo(
+                pdfVersion: info.pdfVersion, producer: info.producer, creator: info.creator,
+                isLinearized: info.isLinearized, isTagged: info.isTagged, hasLayers: info.hasLayers,
+                transparencyDetected: true
+            )
+        }
+        let check = TransparencyCheck(parameters: .init(operator: .is))
+        let result = check.run(on: doc)
+
+        #expect(result.status == .fail)
+        #expect(result.message.contains("Transparency detected"))
+        #expect(result.affectedItems == [.document])
+    }
+
+    @Test("Passes when transparency present with operator .isNot")
+    func passTransparencyIsNot() {
+        let doc = TaxiwayDocument.sample.withDocumentInfo { info in
+            DocumentInfo(
+                pdfVersion: info.pdfVersion, producer: info.producer, creator: info.creator,
+                isLinearized: info.isLinearized, isTagged: info.isTagged, hasLayers: info.hasLayers,
+                transparencyDetected: true
+            )
+        }
+        let check = TransparencyCheck(parameters: .init(operator: .isNot))
+        let result = check.run(on: doc)
+
+        #expect(result.status == .pass)
+    }
+
+    @Test("Fails when no transparency with operator .isNot")
+    func failNoTransparencyIsNot() {
+        let check = TransparencyCheck(parameters: .init(operator: .isNot))
+        let result = check.run(on: .sample)
+
+        #expect(result.status == .fail)
+    }
+
+    @Test("TypeID is pdf.transparency")
+    func typeID() {
+        #expect(TransparencyCheck.typeID == "pdf.transparency")
+    }
+
+    @Test("Default severity is warning")
+    func defaultSeverity() {
+        let check = TransparencyCheck(parameters: .init(operator: .is))
+        #expect(check.defaultSeverity == .warning)
+    }
+}

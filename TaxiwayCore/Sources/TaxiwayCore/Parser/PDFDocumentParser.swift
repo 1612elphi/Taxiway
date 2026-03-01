@@ -33,7 +33,7 @@ public struct PDFDocumentParser: Sendable {
         let images = ImageExtractor.extract(from: pdfDoc, warnings: &warnings)
         let colourSpaces = ColourExtractor.extractColourSpaces(from: pdfDoc, warnings: &warnings)
         let spotColours = ColourExtractor.extractSpotColours(from: pdfDoc, warnings: &warnings)
-        let colourUsages = extractColourUsages(from: pdfDoc)
+        let (colourUsages, overprintUsages) = extractColourUsagesAndOverprints(from: pdfDoc)
         let annotations = AnnotationExtractor.extract(from: pdfDoc, warnings: &warnings)
         let textFrames = extractTextFrames(from: pdfDoc)
         let metadata = MetadataExtractor.extract(from: pdfDoc, warnings: &warnings)
@@ -49,6 +49,7 @@ public struct PDFDocumentParser: Sendable {
             colourUsages: colourUsages,
             annotations: annotations,
             textFrames: textFrames,
+            overprintUsages: overprintUsages,
             metadata: metadata,
             parseWarnings: warnings
         )
@@ -98,6 +99,7 @@ public struct PDFDocumentParser: Sendable {
         let isLinearized = checkLinearized(url: url)
         let isTagged = checkTagged(pdfDoc: pdfDoc)
         let hasLayers = checkLayers(pdfDoc: pdfDoc)
+        let transparencyDetected = checkTransparency(pdfDoc: pdfDoc)
 
         return DocumentInfo(
             pdfVersion: pdfVersion,
@@ -105,7 +107,8 @@ public struct PDFDocumentParser: Sendable {
             creator: creator,
             isLinearized: isLinearized,
             isTagged: isTagged,
-            hasLayers: hasLayers
+            hasLayers: hasLayers,
+            transparencyDetected: transparencyDetected
         )
     }
 
@@ -136,9 +139,9 @@ public struct PDFDocumentParser: Sendable {
         return false
     }
 
-    // MARK: - Colour Usages
+    // MARK: - Colour Usages & Overprints
 
-    private func extractColourUsages(from pdfDoc: PDFDocument) -> [ColourUsageInfo] {
+    private func extractColourUsagesAndOverprints(from pdfDoc: PDFDocument) -> ([ColourUsageInfo], [OverprintInfo]) {
         var rawUsages: [ContentStreamColourScanner.RawColourUsage] = []
 
         for i in 0..<pdfDoc.pageCount {
@@ -146,12 +149,55 @@ public struct PDFDocumentParser: Sendable {
                   let pageRef = page.pageRef else { continue }
 
             let lookup = ContentStreamColourScanner.buildLookup(pageRef: pageRef)
+            let extGStateLookup = ContentStreamColourScanner.buildExtGStateLookup(pageRef: pageRef)
             let pageUsages = ContentStreamColourScanner.scan(
-                page: pageRef, pageIndex: i, lookup: lookup)
+                page: pageRef, pageIndex: i, lookup: lookup, extGStateLookup: extGStateLookup)
             rawUsages.append(contentsOf: pageUsages)
         }
 
-        return ContentStreamColourScanner.deduplicate(rawUsages)
+        // Extract overprint info from raw usages
+        let overprintUsages = Self.extractOverprintInfos(from: rawUsages)
+
+        return (ContentStreamColourScanner.deduplicate(rawUsages), overprintUsages)
+    }
+
+    private static func extractOverprintInfos(from rawUsages: [ContentStreamColourScanner.RawColourUsage]) -> [OverprintInfo] {
+        var seen: Set<String> = []
+        var results: [OverprintInfo] = []
+
+        for usage in rawUsages where usage.overprintEnabled {
+            let context: OverprintContext
+            if usage.context == .pathStroke {
+                context = .stroke
+            } else if usage.context == .textFill {
+                context = .text
+            } else {
+                context = .fill
+            }
+
+            let isWhite = Self.isWhiteColour(mode: usage.mode, components: usage.components)
+            let key = "\(usage.pageIndex):\(context.rawValue):\(isWhite)"
+            guard seen.insert(key).inserted else { continue }
+
+            results.append(OverprintInfo(
+                pageIndex: usage.pageIndex,
+                context: context,
+                isWhiteOverprint: isWhite
+            ))
+        }
+
+        return results
+    }
+
+    private static func isWhiteColour(mode: ColourMode, components: [Double]) -> Bool {
+        switch mode {
+        case .cmyk:
+            return components.count >= 4 && components.allSatisfy { $0 < 0.001 }
+        case .rgb:
+            return components.count >= 3 && components.allSatisfy { $0 > 0.999 }
+        case .gray:
+            return components.first.map { $0 > 0.999 } ?? false
+        }
     }
 
     // MARK: - Text Frames
@@ -179,6 +225,97 @@ public struct PDFDocumentParser: Sendable {
         }
 
         return frames
+    }
+
+    // MARK: - Transparency Detection
+
+    private func checkTransparency(pdfDoc: PDFDocument) -> Bool {
+        guard let cgDoc = pdfDoc.documentRef else { return false }
+
+        for i in 0..<pdfDoc.pageCount {
+            guard let page = pdfDoc.page(at: i),
+                  let pageDict = page.pageRef?.dictionary else { continue }
+
+            // Check for transparency group on page
+            var groupDict: CGPDFDictionaryRef?
+            if CGPDFDictionaryGetDictionary(pageDict, "Group", &groupDict), let group = groupDict {
+                var sName: UnsafePointer<CChar>?
+                if CGPDFDictionaryGetName(group, "S", &sName), let s = sName {
+                    if String(cString: s) == "Transparency" {
+                        return true
+                    }
+                }
+            }
+
+            // Check ExtGState entries for transparency indicators
+            var resourcesDict: CGPDFDictionaryRef?
+            guard CGPDFDictionaryGetDictionary(pageDict, "Resources", &resourcesDict),
+                  let resources = resourcesDict else { continue }
+
+            var extGStateDict: CGPDFDictionaryRef?
+            guard CGPDFDictionaryGetDictionary(resources, "ExtGState", &extGStateDict),
+                  let extGState = extGStateDict else { continue }
+
+            final class TransparencyDetector: @unchecked Sendable {
+                var found = false
+            }
+            let detector = TransparencyDetector()
+            let detectorPtr = Unmanaged.passUnretained(detector).toOpaque()
+
+            CGPDFDictionaryApplyBlock(extGState, { (_, value, info) -> Bool in
+                let detector = Unmanaged<TransparencyDetector>.fromOpaque(info!).takeUnretainedValue()
+
+                var gsDict: CGPDFDictionaryRef?
+                guard CGPDFObjectGetValue(value, .dictionary, &gsDict), let gs = gsDict else { return true }
+
+                // Check fill opacity (ca) < 1.0
+                var ca: CGPDFReal = 1.0
+                if CGPDFDictionaryGetNumber(gs, "ca", &ca), ca < 1.0 {
+                    detector.found = true
+                    return false
+                }
+
+                // Check stroke opacity (CA) < 1.0
+                var bigCA: CGPDFReal = 1.0
+                if CGPDFDictionaryGetNumber(gs, "CA", &bigCA), bigCA < 1.0 {
+                    detector.found = true
+                    return false
+                }
+
+                // Check blend mode != Normal
+                var bmName: UnsafePointer<CChar>?
+                if CGPDFDictionaryGetName(gs, "BM", &bmName), let bm = bmName {
+                    let bmStr = String(cString: bm)
+                    if bmStr != "Normal" {
+                        detector.found = true
+                        return false
+                    }
+                }
+
+                // Check for soft mask
+                var smaskObj: CGPDFObjectRef?
+                if CGPDFDictionaryGetObject(gs, "SMask", &smaskObj), let obj = smaskObj {
+                    // SMask can be a name (/None) or a dictionary
+                    var smaskName: UnsafePointer<CChar>?
+                    if CGPDFObjectGetValue(obj, .name, &smaskName), let name = smaskName {
+                        if String(cString: name) != "None" {
+                            detector.found = true
+                            return false
+                        }
+                    } else {
+                        // It's a dictionary (actual soft mask definition)
+                        detector.found = true
+                        return false
+                    }
+                }
+
+                return true
+            }, detectorPtr)
+
+            if detector.found { return true }
+        }
+
+        return false
     }
 
     private func checkLayers(pdfDoc: PDFDocument) -> Bool {

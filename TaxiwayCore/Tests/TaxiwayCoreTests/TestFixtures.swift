@@ -147,6 +147,8 @@ extension TaxiwayDocument {
         TaxiwayDocument(fileInfo: transform(fileInfo), documentInfo: documentInfo, pages: pages, fonts: fonts,
                         images: images, colourSpaces: colourSpaces, spotColours: spotColours,
                         colourUsages: colourUsages, annotations: annotations, textFrames: textFrames,
+                        overprintUsages: overprintUsages, strokeInfos: strokeInfos,
+                        gradientSpotColours: gradientSpotColours,
                         metadata: metadata, parseWarnings: parseWarnings)
     }
 
@@ -154,6 +156,8 @@ extension TaxiwayDocument {
         TaxiwayDocument(fileInfo: fileInfo, documentInfo: transform(documentInfo), pages: pages, fonts: fonts,
                         images: images, colourSpaces: colourSpaces, spotColours: spotColours,
                         colourUsages: colourUsages, annotations: annotations, textFrames: textFrames,
+                        overprintUsages: overprintUsages, strokeInfos: strokeInfos,
+                        gradientSpotColours: gradientSpotColours,
                         metadata: metadata, parseWarnings: parseWarnings)
     }
 
@@ -168,20 +172,26 @@ extension TaxiwayDocument {
         TaxiwayDocument(fileInfo: fileInfo, documentInfo: documentInfo, pages: pages, fonts: fonts,
                         images: images, colourSpaces: colourSpaces, spotColours: spotColours,
                         colourUsages: colourUsages, annotations: annotations, textFrames: textFrames,
+                        overprintUsages: overprintUsages, strokeInfos: strokeInfos,
+                        gradientSpotColours: gradientSpotColours,
                         metadata: metadata, parseWarnings: parseWarnings)
     }
 
     func withColourSpaces(_ spaces: [ColourSpaceInfo]) -> TaxiwayDocument {
         TaxiwayDocument(fileInfo: fileInfo, documentInfo: documentInfo, pages: pages, fonts: fonts,
                         images: images, colourSpaces: spaces, spotColours: spotColours,
-                        colourUsages: colourUsages, annotations: annotations,
+                        colourUsages: colourUsages, annotations: annotations, textFrames: textFrames,
+                        overprintUsages: overprintUsages, strokeInfos: strokeInfos,
+                        gradientSpotColours: gradientSpotColours,
                         metadata: metadata, parseWarnings: parseWarnings)
     }
 
     func withSpotColours(_ spots: [SpotColourInfo]) -> TaxiwayDocument {
         TaxiwayDocument(fileInfo: fileInfo, documentInfo: documentInfo, pages: pages, fonts: fonts,
                         images: images, colourSpaces: colourSpaces, spotColours: spots,
-                        colourUsages: colourUsages, annotations: annotations,
+                        colourUsages: colourUsages, annotations: annotations, textFrames: textFrames,
+                        overprintUsages: overprintUsages, strokeInfos: strokeInfos,
+                        gradientSpotColours: gradientSpotColours,
                         metadata: metadata, parseWarnings: parseWarnings)
     }
 
@@ -189,6 +199,8 @@ extension TaxiwayDocument {
         TaxiwayDocument(fileInfo: fileInfo, documentInfo: documentInfo, pages: pages, fonts: fonts,
                         images: images, colourSpaces: colourSpaces, spotColours: spotColours,
                         colourUsages: usages, annotations: annotations, textFrames: textFrames,
+                        overprintUsages: overprintUsages, strokeInfos: strokeInfos,
+                        gradientSpotColours: gradientSpotColours,
                         metadata: metadata, parseWarnings: parseWarnings)
     }
 
@@ -196,6 +208,8 @@ extension TaxiwayDocument {
         TaxiwayDocument(fileInfo: fileInfo, documentInfo: documentInfo, pages: pages, fonts: fonts,
                         images: images, colourSpaces: colourSpaces, spotColours: spotColours,
                         colourUsages: colourUsages, annotations: annotations, textFrames: textFrames,
+                        overprintUsages: overprintUsages, strokeInfos: strokeInfos,
+                        gradientSpotColours: gradientSpotColours,
                         metadata: metadata, parseWarnings: parseWarnings)
     }
 
@@ -203,6 +217,8 @@ extension TaxiwayDocument {
         TaxiwayDocument(fileInfo: fileInfo, documentInfo: documentInfo, pages: pages, fonts: fonts,
                         images: images, colourSpaces: colourSpaces, spotColours: spotColours,
                         colourUsages: colourUsages, annotations: annotations, textFrames: textFrames,
+                        overprintUsages: overprintUsages, strokeInfos: strokeInfos,
+                        gradientSpotColours: gradientSpotColours,
                         metadata: metadata, parseWarnings: parseWarnings)
     }
 
@@ -224,9 +240,39 @@ extension TaxiwayDocument {
             colourUsages: colourUsages,
             annotations: annotations,
             textFrames: textFrames,
+            overprintUsages: overprintUsages,
+            strokeInfos: strokeInfos,
+            gradientSpotColours: gradientSpotColours,
             metadata: metadata,
             parseWarnings: parseWarnings
         )
+    }
+
+    func withOverprintUsages(_ overprints: [OverprintInfo]) -> TaxiwayDocument {
+        TaxiwayDocument(fileInfo: fileInfo, documentInfo: documentInfo, pages: pages, fonts: fonts,
+                        images: images, colourSpaces: colourSpaces, spotColours: spotColours,
+                        colourUsages: colourUsages, annotations: annotations, textFrames: textFrames,
+                        overprintUsages: overprints, strokeInfos: strokeInfos,
+                        gradientSpotColours: gradientSpotColours,
+                        metadata: metadata, parseWarnings: parseWarnings)
+    }
+
+    func withStrokeInfos(_ strokes: [StrokeInfo]) -> TaxiwayDocument {
+        TaxiwayDocument(fileInfo: fileInfo, documentInfo: documentInfo, pages: pages, fonts: fonts,
+                        images: images, colourSpaces: colourSpaces, spotColours: spotColours,
+                        colourUsages: colourUsages, annotations: annotations, textFrames: textFrames,
+                        overprintUsages: overprintUsages, strokeInfos: strokes,
+                        gradientSpotColours: gradientSpotColours,
+                        metadata: metadata, parseWarnings: parseWarnings)
+    }
+
+    func withGradientSpotColours(_ gradients: [SpotColourInfo]) -> TaxiwayDocument {
+        TaxiwayDocument(fileInfo: fileInfo, documentInfo: documentInfo, pages: pages, fonts: fonts,
+                        images: images, colourSpaces: colourSpaces, spotColours: spotColours,
+                        colourUsages: colourUsages, annotations: annotations, textFrames: textFrames,
+                        overprintUsages: overprintUsages, strokeInfos: strokeInfos,
+                        gradientSpotColours: gradients,
+                        metadata: metadata, parseWarnings: parseWarnings)
     }
 
     /// An empty document with no pages, fonts, images, etc.

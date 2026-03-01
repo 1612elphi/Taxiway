@@ -505,4 +505,106 @@ struct ColourCheckTests {
             #expect(check.defaultSeverity == .warning)
         }
     }
+
+    // MARK: - OverprintCheck
+
+    @Suite("OverprintCheck")
+    struct OverprintCheckTests {
+
+        @Test("Passes when no fill overprint detected")
+        func passNoFillOverprint() {
+            let check = OverprintCheck(parameters: .init(context: .fill))
+            let result = check.run(on: .sample)
+
+            #expect(result.status == .pass)
+            #expect(result.message.contains("No fill overprint"))
+        }
+
+        @Test("Fails when fill overprint detected")
+        func failFillOverprint() {
+            let doc = TaxiwayDocument.sample.withOverprintUsages([
+                OverprintInfo(pageIndex: 0, context: .fill, isWhiteOverprint: false),
+            ])
+            let check = OverprintCheck(parameters: .init(context: .fill))
+            let result = check.run(on: doc)
+
+            #expect(result.status == .fail)
+            #expect(result.message.contains("Fill overprint"))
+            #expect(result.affectedItems == [.page(index: 0)])
+        }
+
+        @Test("Fails when stroke overprint detected")
+        func failStrokeOverprint() {
+            let doc = TaxiwayDocument.sample.withOverprintUsages([
+                OverprintInfo(pageIndex: 0, context: .stroke, isWhiteOverprint: false),
+                OverprintInfo(pageIndex: 1, context: .stroke, isWhiteOverprint: false),
+            ])
+            let check = OverprintCheck(parameters: .init(context: .stroke))
+            let result = check.run(on: doc)
+
+            #expect(result.status == .fail)
+            #expect(result.message.contains("2"))
+            #expect(result.affectedItems.count == 2)
+        }
+
+        @Test("Fails when text overprint detected")
+        func failTextOverprint() {
+            let doc = TaxiwayDocument.sample.withOverprintUsages([
+                OverprintInfo(pageIndex: 0, context: .text, isWhiteOverprint: false),
+            ])
+            let check = OverprintCheck(parameters: .init(context: .text))
+            let result = check.run(on: doc)
+
+            #expect(result.status == .fail)
+            #expect(result.message.contains("Text overprint"))
+        }
+
+        @Test("White overprint context detects white overprint across all contexts")
+        func failWhiteOverprint() {
+            let doc = TaxiwayDocument.sample.withOverprintUsages([
+                OverprintInfo(pageIndex: 0, context: .fill, isWhiteOverprint: true),
+                OverprintInfo(pageIndex: 1, context: .stroke, isWhiteOverprint: false),
+            ])
+            let check = OverprintCheck(parameters: .init(context: .white))
+            let result = check.run(on: doc)
+
+            #expect(result.status == .fail)
+            #expect(result.message.contains("White overprint"))
+            #expect(result.message.contains("1"))
+            #expect(result.affectedItems == [.page(index: 0)])
+        }
+
+        @Test("Passes when no white overprint present")
+        func passNoWhiteOverprint() {
+            let doc = TaxiwayDocument.sample.withOverprintUsages([
+                OverprintInfo(pageIndex: 0, context: .fill, isWhiteOverprint: false),
+            ])
+            let check = OverprintCheck(parameters: .init(context: .white))
+            let result = check.run(on: doc)
+
+            #expect(result.status == .pass)
+        }
+
+        @Test("Fill context ignores stroke overprint")
+        func fillIgnoresStroke() {
+            let doc = TaxiwayDocument.sample.withOverprintUsages([
+                OverprintInfo(pageIndex: 0, context: .stroke, isWhiteOverprint: false),
+            ])
+            let check = OverprintCheck(parameters: .init(context: .fill))
+            let result = check.run(on: doc)
+
+            #expect(result.status == .pass)
+        }
+
+        @Test("TypeID is colour.overprint")
+        func typeID() {
+            #expect(OverprintCheck.typeID == "colour.overprint")
+        }
+
+        @Test("Default severity is warning")
+        func defaultSeverity() {
+            let check = OverprintCheck(parameters: .init(context: .fill))
+            #expect(check.defaultSeverity == .warning)
+        }
+    }
 }

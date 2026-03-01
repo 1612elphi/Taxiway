@@ -16,6 +16,7 @@ extension CheckRegistry {
         // Colour
         registry.register(ColourSpaceUsedCheck.self)
         registry.register(InkCoverageCheck.self)
+        registry.register(OverprintCheck.self)
         registry.register(RegistrationColourCheck.self)
         registry.register(RichBlackCheck.self)
         registry.register(SpotColourCountCheck.self)
@@ -68,6 +69,7 @@ extension CheckRegistry {
         registry.register(PDFConformanceCheck.self)
         registry.register(PDFVersionCheck.self)
         registry.register(TaggedCheck.self)
+        registry.register(TransparencyCheck.self)
 
         return registry
     }
