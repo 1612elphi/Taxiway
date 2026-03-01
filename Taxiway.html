@@ -59,7 +59,7 @@ body::after {
 /* ═══════ CROP MARKS ═══════ */
 .crop-section {
   position: relative;
-  padding: 3.5rem 0;
+  padding: 5rem 0;
 }
 
 .crop-section::before,
@@ -322,7 +322,7 @@ h2 {
 .stat-bar {
   display: flex;
   justify-content: space-between;
-  padding: 2.5rem 0;
+  padding: 3.5rem 0;
   border-top: 1px solid var(--cream-08);
   border-bottom: 1px solid var(--cream-08);
   flex-wrap: wrap;
@@ -353,8 +353,18 @@ h2 {
   margin-top: 0.4rem;
 }
 
+/* ═══════════════════ WHY PREFLIGHT ═══════════════════ */
+.why-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.5rem;
+  margin-top: 1.5rem;
+}
+
+.why-cols .copy + .copy { margin-top: 0.8rem; }
+
 /* ═══════════════════ FEATURES ═══════════════════ */
-.features { padding: 3.5rem 0; }
+.features { padding: 5rem 0; }
 
 .feat-grid {
   display: grid;
@@ -364,8 +374,6 @@ h2 {
   border: 1px solid var(--cream-08);
   margin-top: 1.5rem;
 }
-
-@media (max-width: 640px) { .feat-grid { grid-template-columns: 1fr; } }
 
 .feat {
   background: var(--bg);
@@ -419,7 +427,7 @@ h2 {
 }
 
 /* ═══════════════════ PROFILES ═══════════════════ */
-.profiles { padding: 3.5rem 0; }
+.profiles { padding: 5rem 0; }
 
 .prof-list {
   display: flex;
@@ -452,7 +460,7 @@ h2 {
 }
 
 /* ═══════════════════ FIX SYSTEM ═══════════════════ */
-.fixes { padding: 3.5rem 0; }
+.fixes { padding: 5rem 0; }
 
 .fix-grid {
   display: grid;
@@ -495,7 +503,7 @@ h2 {
 }
 
 /* ═══════════════════ OPEN SOURCE ═══════════════════ */
-.oss { padding: 3.5rem 0; }
+.oss { padding: 5rem 0; }
 
 .oss-cols {
   display: grid;
@@ -504,8 +512,6 @@ h2 {
   align-items: start;
   margin-top: 1.2rem;
 }
-
-@media (max-width: 700px) { .oss-cols { grid-template-columns: 1fr; } }
 
 .term {
   background: #0a0a08;
@@ -543,7 +549,7 @@ h2 {
 
 /* ═══════════════════ FOOTER ═══════════════════ */
 footer {
-  padding: 3rem 0;
+  padding: 4rem 0;
   text-align: center;
 }
 
@@ -604,10 +610,40 @@ footer {
 
 .rv.vis { opacity: 1; transform: translateY(0); }
 
-@media (max-width: 600px) {
-  .solari-board { gap: 4px; padding: 8px 10px; }
-  .cta-row { flex-direction: column; }
-  .stat-bar { flex-direction: column; align-items: center; }
+@media (max-width: 768px) {
+  .hero { padding: 3.5rem 0 2rem; }
+  .hero-row, .hero-tagline, .hero-sub, .cta-row, .fine-print { padding: 0 1.5rem; }
+  .wrap { padding: 0 1.5rem; }
+  .crop-section { padding: 3.5rem 0; }
+  .solari-board { gap: 4px; padding: 10px 12px; margin-bottom: 2rem; }
+  .solari-char { width: clamp(36px, 11vw, 52px); height: clamp(50px, 15vw, 72px); }
+  .solari-letter { font-size: clamp(1.6rem, 7vw, 2.2rem); }
+  .hero-tagline { font-size: clamp(1.8rem, 7vw, 2.8rem); }
+  .stat-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem 1rem;
+    justify-items: center;
+  }
+  .why-cols { grid-template-columns: 1fr; gap: 1.5rem; }
+  .feat-grid { grid-template-columns: 1fr; }
+  .oss-cols { grid-template-columns: 1fr; }
+  h2 { font-size: clamp(1.5rem, 5.5vw, 2.4rem); }
+}
+
+@media (max-width: 480px) {
+  .hero-row, .hero-tagline, .hero-sub, .cta-row, .fine-print { padding: 0 1.2rem; }
+  .wrap { padding: 0 1.2rem; }
+  .solari-board { gap: 3px; padding: 8px 8px; }
+  .solari-char { width: clamp(32px, 12vw, 44px); height: clamp(44px, 16vw, 60px); }
+  .solari-letter { font-size: clamp(1.4rem, 8vw, 1.8rem); }
+  .hero-tagline { font-size: clamp(1.5rem, 8vw, 2.2rem); }
+  .stat-bar { grid-template-columns: repeat(3, 1fr); gap: 1.2rem 0.5rem; }
+  .stat-n { font-size: 1.6rem; }
+  .cta-row { flex-direction: column; align-items: stretch; }
+  .cta-row .btn { text-align: center; }
+  .fix-grid { grid-template-columns: 1fr; }
+  .prof-list { gap: 0.3rem; }
 }
 </style>
 </head>
@@ -642,6 +678,46 @@ footer {
   <div class="stat"><div class="stat-n" data-to="0">0</div><div class="stat-l">Dependencies</div></div>
   <div class="stat"><div class="stat-n" data-prefix="$" data-to="0">$0</div><div class="stat-l">Per year</div></div>
 </div>
+
+<!-- ════════════════════════════ WHY PREFLIGHT ════════════════════════════ -->
+<section class="crop-section rv">
+  <div class="label">Why Preflight</div>
+  <h2>You wouldn't fly blind.<br>Don't print blind either.</h2>
+
+  <div class="why-cols">
+    <div>
+      <p class="copy">
+        Preflight is the <strong>last line of defence</strong> between your file and the press.
+        It catches the things you can't see — RGB images in a CMYK workflow,
+        fonts that forgot to pack their bags, bleed zones thinner than a promise.
+        The stuff that turns a <strong>$12,000 print run</strong> into very expensive recycling.
+      </p>
+      <p class="copy" style="margin-top:0.8rem">
+        Print shops have been doing this for decades. The tools they use cost
+        a fortune. PitStop Pro runs about a grand a year. Acrobat Pro charges
+        monthly for the privilege of inspecting your own files. The free
+        alternatives have the UI of a tax return and the reliability of a
+        weather forecast.
+      </p>
+    </div>
+    <div>
+      <p class="copy">
+        Taxiway does what those tools do — <strong>parses every object</strong> in your PDF,
+        checks it against a profile, and tells you <strong>exactly what's wrong
+        and exactly where</strong>. Then it fixes what it can. Automatically.
+      </p>
+      <p class="copy" style="margin-top:0.8rem">
+        The entire check engine is <strong>open source</strong>. The fix system ships with
+        <strong>bundled Ghostscript</strong> — no external dependencies. The interface was
+        designed by people who actually send files to press. And <strong>it costs
+        nothing</strong>. Not freemium nothing. Not free-trial nothing.
+        <strong>Nothing</strong> nothing.
+      </p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
 
 <!-- ════════════════════════════ FEATURES ════════════════════════════ -->
 <section class="crop-section features rv">
