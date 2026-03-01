@@ -18,6 +18,18 @@ public enum FixError: Error, Sendable {
     case pdfKitFailed(String)
 }
 
+public struct QueuedFix: Sendable {
+    public let descriptor: FixDescriptor
+    public let parametersJSON: String?
+
+    public init(descriptor: FixDescriptor, parametersJSON: String? = nil) {
+        self.descriptor = descriptor
+        self.parametersJSON = parametersJSON
+    }
+}
+
+private let mmToPoints: Double = 72.0 / 25.4
+
 public struct FixEngine: Sendable {
     private let gsRunner: GhostscriptRunner?
 
@@ -29,15 +41,15 @@ public struct FixEngine: Sendable {
 
     /// Applies the given fixes to the input PDF, writing the result to outputURL.
     public func apply(
-        fixes: [FixDescriptor],
+        fixes: [QueuedFix],
         inputURL: URL,
         outputURL: URL,
         progress: @Sendable (FixProgress) -> Void
     ) throws(FixError) {
         guard !fixes.isEmpty else { throw .noFixesRequested }
 
-        let gsFixes = fixes.filter { $0.category == .ghostscript }
-        let pdfKitFixes = fixes.filter { $0.category == .pdfkit }
+        let gsFixes = fixes.filter { $0.descriptor.category == .ghostscript }
+        let pdfKitFixes = fixes.filter { $0.descriptor.category == .pdfkit }
 
         let tempDir = FileManager.default.temporaryDirectory
             .appendingPathComponent("taxiway-fix-\(UUID().uuidString)")
@@ -50,7 +62,8 @@ public struct FixEngine: Sendable {
         if !gsFixes.isEmpty {
             guard let gs = gsRunner else { throw .ghostscriptNotAvailable }
 
-            progress(FixProgress(stage: "Running Ghostscript", detail: gsFixes.map(\.name).joined(separator: ", ")))
+            progress(FixProgress(stage: "Running Ghostscript",
+                                 detail: gsFixes.map(\.descriptor.name).joined(separator: ", ")))
 
             let gsOutput = tempDir.appendingPathComponent("gs-output.pdf")
             let gsArgs = Self.buildGSArguments(for: gsFixes)
@@ -67,7 +80,8 @@ public struct FixEngine: Sendable {
 
         // PDFKit phase
         if !pdfKitFixes.isEmpty {
-            progress(FixProgress(stage: "Applying PDFKit fixes", detail: pdfKitFixes.map(\.name).joined(separator: ", ")))
+            progress(FixProgress(stage: "Applying PDFKit fixes",
+                                 detail: pdfKitFixes.map(\.descriptor.name).joined(separator: ", ")))
 
             let pdfKitOutput = tempDir.appendingPathComponent("pdfkit-output.pdf")
 
@@ -76,7 +90,7 @@ public struct FixEngine: Sendable {
             }
 
             for fix in pdfKitFixes {
-                if fix.id == "fix.remove_annotations" {
+                if fix.descriptor.id == "fix.remove_annotations" {
                     for pageIndex in 0..<doc.pageCount {
                         guard let page = doc.page(at: pageIndex) else { continue }
                         for annotation in page.annotations {
@@ -104,12 +118,17 @@ public struct FixEngine: Sendable {
         }
     }
 
+    // MARK: - Ghostscript Argument Building
+
     /// Builds the combined Ghostscript arguments for all GS-category fixes.
     /// This method is static and pure for testability.
-    public static func buildGSArguments(for fixes: [FixDescriptor]) -> [String] {
+    public static func buildGSArguments(for fixes: [QueuedFix]) -> [String] {
         var args: [String] = []
+        var preambles: [String] = []
 
-        let fixIDs = Set(fixes.map(\.id))
+        let fixIDs = Set(fixes.map(\.descriptor.id))
+
+        // --- Reactive fix arguments ---
 
         if fixIDs.contains("fix.convert_cmyk") {
             args.append(contentsOf: [
@@ -143,6 +162,95 @@ public struct FixEngine: Sendable {
             ])
         }
 
+        // --- Proactive fix arguments ---
+
+        if let fix = fixes.first(where: { $0.descriptor.id == "fix.set_pdf_version" }) {
+            let version = decodeParam(fix.parametersJSON, key: "version", fallback: "1.4")
+            args.append("-dCompatibilityLevel=\(version)")
+        }
+
+        if let fix = fixes.first(where: { $0.descriptor.id == "fix.change_page_size" }) {
+            let wMM = decodeParam(fix.parametersJSON, key: "widthMM", fallback: 210.0)
+            let hMM = decodeParam(fix.parametersJSON, key: "heightMM", fallback: 297.0)
+            let wPt = wMM * mmToPoints
+            let hPt = hMM * mmToPoints
+            args.append(contentsOf: [
+                "-dFIXEDMEDIA",
+                "-dDEVICEWIDTHPOINTS=\(Int(wPt.rounded()))",
+                "-dDEVICEHEIGHTPOINTS=\(Int(hPt.rounded()))",
+                "-dPDFFitPage=true",
+            ])
+        }
+
+        if let fix = fixes.first(where: { $0.descriptor.id == "fix.add_bleed" }) {
+            let bleedMM = decodeParam(fix.parametersJSON, key: "bleedMM", fallback: 3.0)
+            let pageW = decodeParam(fix.parametersJSON, key: "pageWidthPt", fallback: 595.0)
+            let pageH = decodeParam(fix.parametersJSON, key: "pageHeightPt", fallback: 842.0)
+            let bleedPt = bleedMM * mmToPoints
+            let totalW = Int((pageW + bleedPt * 2).rounded())
+            let totalH = Int((pageH + bleedPt * 2).rounded())
+            args.append(contentsOf: [
+                "-dFIXEDMEDIA",
+                "-dDEVICEWIDTHPOINTS=\(totalW)",
+                "-dDEVICEHEIGHTPOINTS=\(totalH)",
+            ])
+            let bleedStr = String(format: "%.4f", bleedPt)
+            preambles.append("\(bleedStr) \(bleedStr) translate")
+        }
+
+        if let fix = fixes.first(where: { $0.descriptor.id == "fix.add_trim_marks" }) {
+            let offsetMM = decodeParam(fix.parametersJSON, key: "offsetMM", fallback: 3.0)
+            let lengthMM = decodeParam(fix.parametersJSON, key: "lengthMM", fallback: 6.0)
+            let offsetPt = String(format: "%.4f", offsetMM * mmToPoints)
+            let lengthPt = String(format: "%.4f", lengthMM * mmToPoints)
+            preambles.append(
+                "/TXWoff \(offsetPt) def /TXWlen \(lengthPt) def "
+                + "<< /EndPage { "
+                + "exch pop 0 eq { "
+                + "gsave 0 setgray 0.25 setlinewidth "
+                + "currentpagedevice /PageSize get aload pop "
+                + "/pH exch def /pW exch def "
+                // Bottom-left corner
+                + "newpath 0 TXWoff moveto TXWlen 0 rlineto stroke "
+                + "newpath TXWoff 0 moveto 0 TXWlen rlineto stroke "
+                // Bottom-right corner
+                + "newpath pW TXWoff moveto TXWlen neg 0 rlineto stroke "
+                + "newpath pW TXWoff sub 0 moveto 0 TXWlen rlineto stroke "
+                // Top-left corner
+                + "newpath 0 pH TXWoff sub moveto TXWlen 0 rlineto stroke "
+                + "newpath TXWoff pH moveto 0 TXWlen neg rlineto stroke "
+                // Top-right corner
+                + "newpath pW pH TXWoff sub moveto TXWlen neg 0 rlineto stroke "
+                + "newpath pW TXWoff sub pH moveto 0 TXWlen neg rlineto stroke "
+                + "grestore true "
+                + "} { false } ifelse "
+                + "} >> setpagedevice"
+            )
+        }
+
+        // If any PostScript preambles were generated, wrap them in -c ... -f
+        if !preambles.isEmpty {
+            args.append("-c")
+            args.append(preambles.joined(separator: " "))
+            args.append("-f")
+        }
+
         return args
     }
+}
+
+// MARK: - JSON Parameter Decoding Helpers
+
+private func decodeParam(_ json: String?, key: String, fallback: Double) -> Double {
+    guard let json, let data = json.data(using: .utf8),
+          let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+          let value = dict[key] as? Double else { return fallback }
+    return value
+}
+
+private func decodeParam(_ json: String?, key: String, fallback: String) -> String {
+    guard let json, let data = json.data(using: .utf8),
+          let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+          let value = dict[key] as? String else { return fallback }
+    return value
 }

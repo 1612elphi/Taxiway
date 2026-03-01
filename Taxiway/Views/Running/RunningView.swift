@@ -2,9 +2,8 @@ import SwiftUI
 import TaxiwayCore
 
 struct RunningView: View {
-    let url: URL
-    let profile: PreflightProfile
-    @Environment(AppCoordinator.self) var coordinator
+    let session: PreflightSession
+    @Environment(\.dismiss) private var dismiss
     @State private var statusText = "Parsing PDF..."
     @State private var errorMessage: String?
     @State private var showError = false
@@ -21,7 +20,7 @@ struct RunningView: View {
                 .foregroundStyle(.secondary)
 
             Button("Cancel") {
-                coordinator.backToDashboard()
+                dismiss()
             }
 
             Spacer()
@@ -30,11 +29,11 @@ struct RunningView: View {
         .task {
             do {
                 let parser = PDFDocumentParser()
-                let document = try parser.parse(url: url)
+                let document = try parser.parse(url: session.fileURL)
                 statusText = "Running checks..."
                 let engine = PreflightEngine()
-                let report = try engine.run(profile: profile, on: document, documentURL: url)
-                coordinator.showReport(report)
+                let report = try engine.run(profile: session.profile, on: document, documentURL: session.fileURL)
+                session.showReport(report)
             } catch {
                 errorMessage = error.localizedDescription
                 showError = true
@@ -42,7 +41,7 @@ struct RunningView: View {
         }
         .alert("Error", isPresented: $showError) {
             Button("OK") {
-                coordinator.backToDashboard()
+                dismiss()
             }
         } message: {
             if let errorMessage {

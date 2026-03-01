@@ -7,6 +7,7 @@ final class FixQueue {
         let id: String
         let descriptor: FixDescriptor
         let addressedResults: [CheckResult]
+        let parametersJSON: String?
     }
 
     private(set) var items: [Item] = []
@@ -22,8 +23,15 @@ final class FixQueue {
         if let index = items.firstIndex(where: { $0.id == descriptor.id }) {
             items.remove(at: index)
         } else {
-            items.append(Item(id: descriptor.id, descriptor: descriptor, addressedResults: results))
+            items.append(Item(id: descriptor.id, descriptor: descriptor,
+                              addressedResults: results, parametersJSON: nil))
         }
+    }
+
+    func addProactiveFix(_ descriptor: FixDescriptor, parametersJSON: String?) {
+        guard !isQueued(descriptor.id) else { return }
+        items.append(Item(id: descriptor.id, descriptor: descriptor,
+                          addressedResults: [], parametersJSON: parametersJSON))
     }
 
     func isQueued(_ descriptorID: String) -> Bool {

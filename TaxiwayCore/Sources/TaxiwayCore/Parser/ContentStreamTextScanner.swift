@@ -261,6 +261,11 @@ struct ContentStreamTextScanner: Sendable {
         _ a: AnnotationBounds, _ aSize: Double,
         _ b: AnnotationBounds, _ bSize: Double
     ) -> Bool {
+        // Don't merge frames with very different font sizes (e.g. heading + body).
+        // This preserves individual font size data for checks like fonts.size.
+        let minSize = max(min(aSize, bSize), 0.01)
+        if max(aSize, bSize) / minSize > 2.0 { return false }
+
         let maxSize = max(aSize, bSize)
 
         // Vertical gap between the two bounding boxes

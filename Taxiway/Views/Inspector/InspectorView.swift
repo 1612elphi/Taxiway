@@ -3,21 +3,23 @@ import TaxiwayCore
 
 struct InspectorView: View {
     let document: TaxiwayDocument
+    var onHighlight: (([AffectedItem]) -> Void)?
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: TaxiwayTheme.sectionSpacing) {
-                documentInfoSection
-                pagesSection
-                fontsSection
-                imagesSection
-                colourSpacesSection
-                spotColoursSection
-                annotationsSection
-            }
-            .padding(TaxiwayTheme.panelPadding)
+        VStack(alignment: .leading, spacing: TaxiwayTheme.sectionSpacing) {
+            documentInfoSection
+            pagesSection
+            fontsSection
+            textFramesSection
+            imagesSection
+            ColoursInspectorSection(
+                colourUsages: document.colourUsages,
+                onHighlight: onHighlight
+            )
+            colourSpacesSection
+            spotColoursSection
+            annotationsSection
         }
-        .frame(minWidth: 300, idealWidth: 300)
     }
 
     // MARK: - Document Info
@@ -51,31 +53,33 @@ struct InspectorView: View {
         DisclosureGroup("Pages (\(document.pages.count))") {
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(document.pages, id: \.index) { page in
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Page \(page.index + 1)")
-                            .font(TaxiwayTheme.monoSmall)
-                            .fontWeight(.semibold)
-                        Text("Media: \(boxDescription(page.mediaBox))")
-                            .font(TaxiwayTheme.monoSmall)
-                        if page.trimBox != nil {
-                            Text("Trim: \(boxDescription(page.effectiveTrimBox))")
+                    tappableRow(items: [.page(index: page.index)]) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Page \(page.index + 1)")
                                 .font(TaxiwayTheme.monoSmall)
-                                .foregroundStyle(.secondary)
-                        }
-                        if page.bleedBox != nil {
-                            Text("Bleed: present")
+                                .fontWeight(.semibold)
+                            Text("Media: \(boxDescription(page.mediaBox))")
                                 .font(TaxiwayTheme.monoSmall)
-                                .foregroundStyle(.secondary)
-                        }
-                        if page.artBox != nil {
-                            Text("Art: present")
-                                .font(TaxiwayTheme.monoSmall)
-                                .foregroundStyle(.secondary)
-                        }
-                        if page.rotation != 0 {
-                            Text("Rotation: \(page.rotation)\u{00B0}")
-                                .font(TaxiwayTheme.monoSmall)
-                                .foregroundStyle(.secondary)
+                            if page.trimBox != nil {
+                                Text("Trim: \(boxDescription(page.effectiveTrimBox))")
+                                    .font(TaxiwayTheme.monoSmall)
+                                    .foregroundStyle(.secondary)
+                            }
+                            if page.bleedBox != nil {
+                                Text("Bleed: present")
+                                    .font(TaxiwayTheme.monoSmall)
+                                    .foregroundStyle(.secondary)
+                            }
+                            if page.artBox != nil {
+                                Text("Art: present")
+                                    .font(TaxiwayTheme.monoSmall)
+                                    .foregroundStyle(.secondary)
+                            }
+                            if page.rotation != 0 {
+                                Text("Rotation: \(page.rotation)\u{00B0}")
+                                    .font(TaxiwayTheme.monoSmall)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                     }
                 }
@@ -91,32 +95,64 @@ struct InspectorView: View {
         DisclosureGroup("Fonts (\(document.fonts.count))") {
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(document.fonts, id: \.name) { font in
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(font.name)
-                            .font(TaxiwayTheme.monoSmall)
-                            .fontWeight(.semibold)
-                        HStack(spacing: 8) {
-                            Text(font.type.rawValue)
+                    tappableRow(items: [.font(name: font.name, pages: font.pagesUsedOn)]) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(font.name)
                                 .font(TaxiwayTheme.monoSmall)
-                                .foregroundStyle(.secondary)
-                            if font.isEmbedded {
-                                Text("Embedded")
-                                    .font(TaxiwayTheme.monoSmall)
-                                    .foregroundStyle(.green)
-                            } else {
-                                Text("Not embedded")
-                                    .font(TaxiwayTheme.monoSmall)
-                                    .foregroundStyle(.red)
-                            }
-                            if font.isSubset {
-                                Text("Subset")
+                                .fontWeight(.semibold)
+                            HStack(spacing: 8) {
+                                Text(font.type.rawValue)
                                     .font(TaxiwayTheme.monoSmall)
                                     .foregroundStyle(.secondary)
+                                if font.isEmbedded {
+                                    Text("Embedded")
+                                        .font(TaxiwayTheme.monoSmall)
+                                        .foregroundStyle(.green)
+                                } else {
+                                    Text("Not embedded")
+                                        .font(TaxiwayTheme.monoSmall)
+                                        .foregroundStyle(.red)
+                                }
+                                if font.isSubset {
+                                    Text("Subset")
+                                        .font(TaxiwayTheme.monoSmall)
+                                        .foregroundStyle(.secondary)
+                                }
                             }
+                            Text("Pages: \(font.pagesUsedOn.map { String($0 + 1) }.joined(separator: ", "))")
+                                .font(TaxiwayTheme.monoSmall)
+                                .foregroundStyle(.secondary)
                         }
-                        Text("Pages: \(font.pagesUsedOn.map { String($0 + 1) }.joined(separator: ", "))")
-                            .font(TaxiwayTheme.monoSmall)
-                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+            .padding(.top, 4)
+        }
+    }
+
+    // MARK: - Text Frames
+
+    @ViewBuilder
+    private var textFramesSection: some View {
+        DisclosureGroup("Text Frames (\(document.textFrames.count))") {
+            VStack(alignment: .leading, spacing: 8) {
+                ForEach(document.textFrames, id: \.id) { frame in
+                    tappableRow(items: [.textFrame(id: frame.id, page: frame.pageIndex, bounds: frame.bounds)]) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(frame.fontName)
+                                .font(TaxiwayTheme.monoSmall)
+                                .fontWeight(.semibold)
+                            Text(String(format: "Size: %.1f pt", frame.fontSize))
+                                .font(TaxiwayTheme.monoSmall)
+                                .foregroundStyle(.secondary)
+                            Text(String(format: "%.0f \u{00D7} %.0f pt",
+                                        frame.bounds.width, frame.bounds.height))
+                                .font(TaxiwayTheme.monoSmall)
+                                .foregroundStyle(.secondary)
+                            Text("Page \(frame.pageIndex + 1)")
+                                .font(TaxiwayTheme.monoSmall)
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 }
             }
@@ -131,27 +167,29 @@ struct InspectorView: View {
         DisclosureGroup("Images (\(document.images.count))") {
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(document.images, id: \.id) { image in
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(image.id)
-                            .font(TaxiwayTheme.monoSmall)
-                            .fontWeight(.semibold)
-                        Text("\(image.widthPixels)\u{00D7}\(image.heightPixels) px")
-                            .font(TaxiwayTheme.monoSmall)
-                        Text(String(format: "PPI: %.0f \u{00D7} %.0f",
-                                    image.effectivePPIHorizontal, image.effectivePPIVertical))
-                            .font(TaxiwayTheme.monoSmall)
-                            .foregroundStyle(.secondary)
-                        HStack(spacing: 8) {
-                            Text(image.colourMode.rawValue)
+                    tappableRow(items: [.image(id: image.id, page: image.pageIndex, bounds: image.bounds)]) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(image.id)
+                                .font(TaxiwayTheme.monoSmall)
+                                .fontWeight(.semibold)
+                            Text("\(image.widthPixels)\u{00D7}\(image.heightPixels) px")
+                                .font(TaxiwayTheme.monoSmall)
+                            Text(String(format: "PPI: %.0f \u{00D7} %.0f",
+                                        image.effectivePPIHorizontal, image.effectivePPIVertical))
                                 .font(TaxiwayTheme.monoSmall)
                                 .foregroundStyle(.secondary)
-                            Text(image.compressionType.rawValue)
+                            HStack(spacing: 8) {
+                                Text(image.colourMode.rawValue)
+                                    .font(TaxiwayTheme.monoSmall)
+                                    .foregroundStyle(.secondary)
+                                Text(image.compressionType.rawValue)
+                                    .font(TaxiwayTheme.monoSmall)
+                                    .foregroundStyle(.secondary)
+                            }
+                            Text("Page \(image.pageIndex + 1)")
                                 .font(TaxiwayTheme.monoSmall)
                                 .foregroundStyle(.secondary)
                         }
-                        Text("Page \(image.pageIndex + 1)")
-                            .font(TaxiwayTheme.monoSmall)
-                            .foregroundStyle(.secondary)
                     }
                 }
             }
@@ -166,18 +204,20 @@ struct InspectorView: View {
         DisclosureGroup("Colour Spaces (\(document.colourSpaces.count))") {
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(Array(document.colourSpaces.enumerated()), id: \.offset) { _, cs in
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(cs.name.rawValue)
-                            .font(TaxiwayTheme.monoSmall)
-                            .fontWeight(.semibold)
-                        if let icc = cs.iccProfileName {
-                            Text("ICC: \(icc)")
+                    tappableRow(items: [.colourSpace(name: cs.name.rawValue, pages: cs.pagesUsedOn)]) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(cs.name.rawValue)
+                                .font(TaxiwayTheme.monoSmall)
+                                .fontWeight(.semibold)
+                            if let icc = cs.iccProfileName {
+                                Text("ICC: \(icc)")
+                                    .font(TaxiwayTheme.monoSmall)
+                                    .foregroundStyle(.secondary)
+                            }
+                            Text("Pages: \(cs.pagesUsedOn.map { String($0 + 1) }.joined(separator: ", "))")
                                 .font(TaxiwayTheme.monoSmall)
                                 .foregroundStyle(.secondary)
                         }
-                        Text("Pages: \(cs.pagesUsedOn.map { String($0 + 1) }.joined(separator: ", "))")
-                            .font(TaxiwayTheme.monoSmall)
-                            .foregroundStyle(.secondary)
                     }
                 }
             }
@@ -192,13 +232,15 @@ struct InspectorView: View {
         DisclosureGroup("Spot Colours (\(document.spotColours.count))") {
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(Array(document.spotColours.enumerated()), id: \.offset) { _, spot in
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(spot.name)
-                            .font(TaxiwayTheme.monoSmall)
-                            .fontWeight(.semibold)
-                        Text("Pages: \(spot.pagesUsedOn.map { String($0 + 1) }.joined(separator: ", "))")
-                            .font(TaxiwayTheme.monoSmall)
-                            .foregroundStyle(.secondary)
+                    tappableRow(items: [.colourSpace(name: spot.name, pages: spot.pagesUsedOn)]) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(spot.name)
+                                .font(TaxiwayTheme.monoSmall)
+                                .fontWeight(.semibold)
+                            Text("Pages: \(spot.pagesUsedOn.map { String($0 + 1) }.joined(separator: ", "))")
+                                .font(TaxiwayTheme.monoSmall)
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 }
             }
@@ -213,23 +255,51 @@ struct InspectorView: View {
         DisclosureGroup("Annotations (\(document.annotations.count))") {
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(Array(document.annotations.enumerated()), id: \.offset) { _, annotation in
-                    HStack(spacing: 8) {
-                        Text(annotation.type.rawValue)
-                            .font(TaxiwayTheme.monoSmall)
-                            .fontWeight(.semibold)
-                        if let subtype = annotation.subtype {
-                            Text("(\(subtype))")
+                    tappableRow(items: [.annotation(
+                        type: annotation.type.rawValue,
+                        page: annotation.pageIndex,
+                        bounds: annotation.bounds
+                    )]) {
+                        HStack(spacing: 8) {
+                            Text(annotation.type.rawValue)
+                                .font(TaxiwayTheme.monoSmall)
+                                .fontWeight(.semibold)
+                            if let subtype = annotation.subtype {
+                                Text("(\(subtype))")
+                                    .font(TaxiwayTheme.monoSmall)
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                            Text("Page \(annotation.pageIndex + 1)")
                                 .font(TaxiwayTheme.monoSmall)
                                 .foregroundStyle(.secondary)
                         }
-                        Spacer()
-                        Text("Page \(annotation.pageIndex + 1)")
-                            .font(TaxiwayTheme.monoSmall)
-                            .foregroundStyle(.secondary)
                     }
                 }
             }
             .padding(.top, 4)
+        }
+    }
+
+    // MARK: - Tappable Row
+
+    @ViewBuilder
+    private func tappableRow<Content: View>(
+        items: [AffectedItem],
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        if onHighlight != nil {
+            Button {
+                onHighlight?(items)
+            } label: {
+                content()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(4)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(InspectorRowButtonStyle())
+        } else {
+            content()
         }
     }
 
@@ -248,5 +318,17 @@ struct InspectorView: View {
 
     private func boxDescription(_ rect: CGRect) -> String {
         String(format: "%.0f \u{00D7} %.0f pt", rect.width, rect.height)
+    }
+}
+
+// MARK: - Button Style
+
+private struct InspectorRowButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .background(
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(configuration.isPressed ? Color.accentColor.opacity(0.15) : Color.clear)
+            )
     }
 }

@@ -21,12 +21,6 @@ struct SettingsView: View {
                     coordinator.clearRecentFiles()
                 }
             }
-
-            Section("About") {
-                LabeledContent("Version", value: "Taxiway 1.0")
-                Text("PDF Preflight Engine")
-                    .foregroundStyle(.secondary)
-            }
         }
         .formStyle(.grouped)
     }

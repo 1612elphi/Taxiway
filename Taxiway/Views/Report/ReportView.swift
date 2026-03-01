@@ -8,7 +8,12 @@ struct ReportView: View {
     @State private var selectedResult: CheckResult?
     @State private var showInspector = true
     @State private var inspectorHighlight: [AffectedItem]?
-    @State private var showFixQueue = false
+    @State private var inspectorTab: InspectorTab = .report
+
+    enum InspectorTab: String, CaseIterable {
+        case report = "Report"
+        case fix = "Fix"
+    }
 
     var body: some View {
         NavigationSplitView {
@@ -40,17 +45,33 @@ struct ReportView: View {
             )
         }
         .inspector(isPresented: $showInspector) {
-            ScrollView {
-                VStack(alignment: .leading, spacing: TaxiwayTheme.sectionSpacing) {
-                    if let selected = selectedResult {
-                        ResultDetailView(result: selected, session: session)
-                        Divider()
-                    }
-                    InspectorView(document: report.documentSnapshot) { items in
-                        inspectorHighlight = items
+            VStack(spacing: 0) {
+                Picker("", selection: $inspectorTab) {
+                    ForEach(InspectorTab.allCases, id: \.self) { Text($0.rawValue) }
+                }
+                .pickerStyle(.segmented)
+                .padding(TaxiwayTheme.panelPadding)
+
+                Divider()
+
+                ScrollView {
+                    switch inspectorTab {
+                    case .report:
+                        VStack(alignment: .leading, spacing: TaxiwayTheme.sectionSpacing) {
+                            if let selected = selectedResult {
+                                ResultDetailView(result: selected, session: session)
+                                Divider()
+                            }
+                            InspectorView(document: report.documentSnapshot) { items in
+                                inspectorHighlight = items
+                            }
+                        }
+                        .padding(TaxiwayTheme.panelPadding)
+                    case .fix:
+                        FixPanelView(session: session)
+                            .padding(TaxiwayTheme.panelPadding)
                     }
                 }
-                .padding(TaxiwayTheme.panelPadding)
             }
             .inspectorColumnWidth(min: 280, ideal: 320, max: 400)
         }
@@ -71,18 +92,6 @@ struct ReportView: View {
             Text(session.fixError ?? "")
         }
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button {
-                    showFixQueue.toggle()
-                } label: {
-                    Label("Fix Queue", systemImage: "wrench")
-                }
-                .badge(session.fixQueue.count)
-                .popover(isPresented: $showFixQueue) {
-                    FixQueueView(session: session)
-                }
-            }
-
             ToolbarItem(placement: .primaryAction) {
                 Button {
                     showInspector.toggle()

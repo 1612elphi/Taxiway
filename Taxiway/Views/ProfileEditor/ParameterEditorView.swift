@@ -52,6 +52,16 @@ struct ParameterEditorView: View {
                 decode: { (p: TaggedCheck.Parameters) in p.expected },
                 encode: { TaggedCheck.Parameters(expected: $0) }
             )
+        case "pdf.transparency":
+            comparisonOperatorEditor(
+                decode: { (p: TransparencyCheck.Parameters) in p.operator },
+                encode: { TransparencyCheck.Parameters(operator: $0) }
+            )
+        case "pdf.all_text_outlined":
+            comparisonOperatorEditor(
+                decode: { (p: AllTextOutlinedCheck.Parameters) in p.operator },
+                encode: { AllTextOutlinedCheck.Parameters(operator: $0) }
+            )
 
         // MARK: - Pages
         case "pages.count":
@@ -78,6 +88,11 @@ struct ParameterEditorView: View {
                 decode: { (p: BleedNonUniformCheck.Parameters) in p.toleranceMM },
                 encode: { BleedNonUniformCheck.Parameters(toleranceMM: $0) }
             )
+        case "marks.art_slug_box":
+            comparisonOperatorEditor(
+                decode: { (p: ArtSlugBoxCheck.Parameters) in p.operator },
+                encode: { ArtSlugBoxCheck.Parameters(operator: $0) }
+            )
 
         // MARK: - Colour
         case "colour.space_used":
@@ -88,6 +103,10 @@ struct ParameterEditorView: View {
                 decode: { (p: SpotColourCountCheck.Parameters) in p.maxCount },
                 encode: { SpotColourCountCheck.Parameters(maxCount: $0) }
             )
+        case "colour.ink_coverage":
+            inkCoverageEditor()
+        case "colour.overprint":
+            overprintContextEditor()
 
         // MARK: - Fonts
         case "fonts.type":
@@ -718,6 +737,92 @@ struct ParameterEditorView: View {
                 .frame(width: 100)
                 .disabled(readOnly)
             }
+        }
+    }
+
+    @ViewBuilder
+    private func comparisonOperatorEditor<P: CheckParameters>(
+        decode: @escaping (P) -> ComparisonOperator,
+        encode: @escaping (ComparisonOperator) -> P
+    ) -> some View {
+        HStack {
+            Text("Operator")
+                .font(TaxiwayTheme.monoSmall)
+            Spacer()
+            Picker("", selection: Binding(
+                get: { decodeParams(P.self).map(decode) ?? .is },
+                set: { encodeAndStore(encode($0)) }
+            )) {
+                Text("Is").tag(ComparisonOperator.is)
+                Text("Is Not").tag(ComparisonOperator.isNot)
+            }
+            .labelsHidden()
+            .frame(width: 100)
+            .disabled(readOnly)
+        }
+    }
+
+    @ViewBuilder
+    private func inkCoverageEditor() -> some View {
+        let params = decodeParams(InkCoverageCheck.Parameters.self)
+            ?? InkCoverageCheck.Parameters(thresholdPercent: 300, operator: .moreThan)
+        VStack(spacing: 8) {
+            HStack {
+                Text("Operator")
+                    .font(TaxiwayTheme.monoSmall)
+                Spacer()
+                Picker("", selection: Binding(
+                    get: { decodeParams(InkCoverageCheck.Parameters.self)?.operator ?? .moreThan },
+                    set: { val in
+                        let current = decodeParams(InkCoverageCheck.Parameters.self) ?? params
+                        encodeAndStore(InkCoverageCheck.Parameters(thresholdPercent: current.thresholdPercent, operator: val))
+                    }
+                )) {
+                    Text("Equals").tag(NumericOperator.equals)
+                    Text("Less Than").tag(NumericOperator.lessThan)
+                    Text("More Than").tag(NumericOperator.moreThan)
+                }
+                .labelsHidden()
+                .frame(width: 120)
+                .disabled(readOnly)
+            }
+            HStack {
+                Text("Threshold (%)")
+                    .font(TaxiwayTheme.monoSmall)
+                Spacer()
+                TextField("300", value: Binding(
+                    get: { decodeParams(InkCoverageCheck.Parameters.self)?.thresholdPercent ?? 300 },
+                    set: { val in
+                        let current = decodeParams(InkCoverageCheck.Parameters.self) ?? params
+                        encodeAndStore(InkCoverageCheck.Parameters(thresholdPercent: val, operator: current.operator))
+                    }
+                ), format: .number)
+                .font(TaxiwayTheme.monoSmall)
+                .textFieldStyle(.roundedBorder)
+                .frame(width: 100)
+                .disabled(readOnly)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func overprintContextEditor() -> some View {
+        HStack {
+            Text("Context")
+                .font(TaxiwayTheme.monoSmall)
+            Spacer()
+            Picker("", selection: Binding(
+                get: { decodeParams(OverprintCheck.Parameters.self)?.context ?? .fill },
+                set: { encodeAndStore(OverprintCheck.Parameters(context: $0)) }
+            )) {
+                Text("Fill").tag(OverprintCheck.OverprintCheckContext.fill)
+                Text("Stroke").tag(OverprintCheck.OverprintCheckContext.stroke)
+                Text("Text").tag(OverprintCheck.OverprintCheckContext.text)
+                Text("White").tag(OverprintCheck.OverprintCheckContext.white)
+            }
+            .labelsHidden()
+            .frame(width: 120)
+            .disabled(readOnly)
         }
     }
 

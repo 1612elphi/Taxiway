@@ -137,17 +137,6 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
-
-/* Begin PBXSourcesBuildPhase section */
-		9BC0F82A2F536A7B00E614D5 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXSourcesBuildPhase section */
-
 /* Begin PBXShellScriptBuildPhase section */
 		9BF1A0012F63000000E614D5 /* Copy Ghostscript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -166,6 +155,16 @@
 			shellScript = "GS_SOURCE=\"${SRCROOT}/vendor/gs\"\nGS_DEST=\"${BUILT_PRODUCTS_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/gs\"\n\nif [ -d \"$GS_SOURCE\" ]; then\n    rm -rf \"$GS_DEST\"\n    cp -R \"$GS_SOURCE\" \"$GS_DEST\"\nelse\n    echo \"warning: Ghostscript not found at $GS_SOURCE\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		9BC0F82A2F536A7B00E614D5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
 		9BC0F8392F536A7C00E614D5 /* Debug */ = {

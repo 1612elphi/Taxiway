@@ -3,13 +3,6 @@ import TaxiwayCore
 
 @Observable
 final class AppCoordinator {
-    enum Screen {
-        case dashboard
-        case running(URL, PreflightProfile)
-        case report(PreflightReport)
-    }
-
-    var currentScreen: Screen = .dashboard
     var selectedProfile: PreflightProfile = .loose
     var recentFiles: [URL] = []
     var showingProfileEditor = false
@@ -21,27 +14,25 @@ final class AppCoordinator {
         loadRecentFiles()
     }
 
-    func startPreflight(url: URL) {
-        addRecentFile(url)
-        currentScreen = .running(url, selectedProfile)
-    }
-
-    func showReport(_ report: PreflightReport) {
-        currentScreen = .report(report)
-    }
-
-    func backToDashboard() {
-        currentScreen = .dashboard
-    }
-
     func editProfile(_ profile: PreflightProfile) {
         editingProfile = profile
         showingProfileEditor = true
     }
 
+    func createProfile() {
+        let newProfile = PreflightProfile(
+            name: "New Profile",
+            description: "",
+            origin: .user,
+            checks: []
+        )
+        editingProfile = newProfile
+        showingProfileEditor = true
+    }
+
     // MARK: - Recent Files
 
-    private func addRecentFile(_ url: URL) {
+    func addRecentFile(_ url: URL) {
         recentFiles.removeAll { $0 == url }
         recentFiles.insert(url, at: 0)
         if recentFiles.count > maxRecentFiles {

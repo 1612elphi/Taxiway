@@ -34,7 +34,7 @@ final class PreflightSession: Identifiable {
         guard !fixQueue.isEmpty else { return }
 
         let engine = FixEngine()
-        let fixes = fixQueue.items.map(\.descriptor)
+        let fixes = fixQueue.items.map { QueuedFix(descriptor: $0.descriptor, parametersJSON: $0.parametersJSON) }
 
         // Check GS availability if needed
         if fixQueue.requiresGhostscript && !engine.ghostscriptAvailable {
