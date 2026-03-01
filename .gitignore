@@ -1,0 +1,24 @@
+# Xcode
+*.xcuserstate
+*.xcscmblueprint
+xcuserdata/
+DerivedData/
+
+# macOS
+.DS_Store
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# Worktrees
+.worktrees/
+
+# Vendor (built Ghostscript binary)
+vendor/
+
+# Ghostscript build artifacts
+.gs-build/
+
+# Built app bundles
+*.app/
