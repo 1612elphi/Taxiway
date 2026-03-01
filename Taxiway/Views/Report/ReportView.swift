@@ -18,7 +18,7 @@ struct ReportView: View {
     var body: some View {
         NavigationSplitView {
             VStack(spacing: 0) {
-                SolariStatusView(outcome: report.displayOutcome)
+                SolariStatusView(outcome: report.displayOutcome, results: report.results)
                     .padding(TaxiwayTheme.panelPadding)
 
                 ReportMetadataView(report: report)

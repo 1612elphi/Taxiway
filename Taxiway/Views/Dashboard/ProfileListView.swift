@@ -55,6 +55,13 @@ struct ProfileListView: View {
 
                 Divider().frame(height: 14)
 
+                toolbarButton(icon: "pencil") {
+                    coordinator.editProfile(coordinator.selectedProfile)
+                }
+                .disabled(coordinator.selectedProfile.origin == .builtIn)
+
+                Divider().frame(height: 14)
+
                 toolbarButton(icon: "minus") {
                     deleteSelectedProfile()
                 }

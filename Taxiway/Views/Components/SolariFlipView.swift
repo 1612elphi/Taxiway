@@ -1,4 +1,5 @@
 import SwiftUI
+import TaxiwayCore
 
 // MARK: - FlipCardView
 
@@ -243,6 +244,7 @@ struct SolariTaglineView: View {
 
 struct SolariStatusView: View {
     let outcome: DisplayOutcome
+    var results: [TaxiwayCore.CheckResult] = []
 
     private var word: String {
         switch outcome {
@@ -260,17 +262,82 @@ struct SolariStatusView: View {
         }
     }
 
+    private var hasFixers: Bool {
+        let failures = results.filter { $0.status == .fail || $0.status == .warning }
+        guard !failures.isEmpty else { return true }
+        let registry = FixRegistry.default
+        return failures.allSatisfy { registry.availableFix(for: $0.checkTypeID) != nil }
+    }
+
+    // Left: fixability indicator, Right: severity indicator
+    private var leftColor: Color {
+        switch outcome {
+        case .pass: TaxiwayTheme.statusPass
+        case .warn: hasFixers ? TaxiwayTheme.statusWarning : TaxiwayTheme.statusError
+        case .fail: hasFixers ? TaxiwayTheme.statusWarning : TaxiwayTheme.statusError
+        }
+    }
+
+    private var rightColor: Color {
+        switch outcome {
+        case .pass: TaxiwayTheme.statusPass
+        case .warn: TaxiwayTheme.statusWarning
+        case .fail: TaxiwayTheme.statusError
+        }
+    }
+
     var body: some View {
-        SolariWordView(
-            word: word,
-            fontSize: 36,
-            cardColor: Color(white: 0.15),
-            textColor: textColor
-        )
+        HStack(spacing: 10) {
+            HStack(spacing: 8) {
+                IndicatorLight(color: leftColor, phase: .left, alternating: outcome == .pass)
+                IndicatorLight(color: rightColor, phase: .right, alternating: outcome == .pass)
+            }
+            Spacer().frame(width: 8)
+            SolariCascadeView(
+                word: word,
+                fontSize: 36,
+                cardColor: Color(white: 0.15),
+                textColor: textColor
+            )
+        }
         .padding(.vertical, 16)
         .padding(.horizontal, 12)
         .frame(maxWidth: .infinity)
         .background(Color(white: 0.08))
         .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+}
+
+// MARK: - Indicator Light
+
+private struct IndicatorLight: View {
+    let color: Color
+    let phase: Phase
+    let alternating: Bool
+
+    enum Phase { case left, right }
+
+    @State private var tick = false
+
+    private var lit: Bool {
+        guard alternating else { return true }
+        return phase == .left ? tick : !tick
+    }
+
+    var body: some View {
+        Circle()
+            .fill(color)
+            .frame(width: 12, height: 12)
+            .shadow(color: color.opacity(0.6), radius: 6)
+            .opacity(lit ? 1.0 : 0.2)
+            .onAppear {
+                guard alternating else { return }
+                Task { @MainActor in
+                    while !Task.isCancelled {
+                        try? await Task.sleep(for: .milliseconds(700))
+                        tick.toggle()
+                    }
+                }
+            }
     }
 }

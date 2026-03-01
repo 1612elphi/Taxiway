@@ -23,6 +23,8 @@ struct TaxiwayApp: App {
                     .environment(coordinator)
                     .environment(sessionStore)
                     .frame(minWidth: 800, minHeight: 600)
+            } else {
+                AutoCloseView()
             }
         }
         .defaultSize(width: 1100, height: 750)
@@ -31,5 +33,12 @@ struct TaxiwayApp: App {
             SettingsView()
                 .environment(coordinator)
         }
+    }
+}
+
+private struct AutoCloseView: View {
+    @Environment(\.dismiss) var dismiss
+    var body: some View {
+        Color.clear.onAppear { dismiss() }
     }
 }
