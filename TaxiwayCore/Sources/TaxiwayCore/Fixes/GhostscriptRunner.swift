@@ -1,9 +1,21 @@
 import Foundation
 
-public enum GhostscriptError: Error, Sendable {
+public enum GhostscriptError: Error, Sendable, LocalizedError {
     case binaryNotFound
     case executionFailed(String)
     case nonZeroExit(code: Int32, stderr: String)
+
+    public var errorDescription: String? {
+        switch self {
+        case .binaryNotFound:
+            return "The bundled Ghostscript binary was not found."
+        case .executionFailed(let reason):
+            return "Ghostscript failed to launch: \(reason)"
+        case .nonZeroExit(let code, let stderr):
+            let detail = stderr.isEmpty ? "exit code \(code)" : stderr.trimmingCharacters(in: .whitespacesAndNewlines)
+            return "Ghostscript exited with error: \(detail)"
+        }
+    }
 }
 
 public struct GhostscriptRunner: Sendable {
@@ -19,11 +31,23 @@ public struct GhostscriptRunner: Sendable {
     public static func bundled() -> GhostscriptRunner? {
         guard let resourceURL = Bundle.main.resourceURL else { return nil }
         let gsDir = resourceURL.appendingPathComponent("gs")
-        let binaryURL = gsDir.appendingPathComponent("bin/gs")
+        let binaryURL = gsDir
+            .appendingPathComponent("bin")
+            .appendingPathComponent("gs")
         let libURL = gsDir.appendingPathComponent("lib")
 
         guard FileManager.default.fileExists(atPath: binaryURL.path) else { return nil }
         return GhostscriptRunner(binaryURL: binaryURL, libURL: libURL)
+    }
+
+    /// Returns the path where the bundled Ghostscript binary is expected, for diagnostics.
+    public static var expectedBundledPath: String {
+        guard let resourceURL = Bundle.main.resourceURL else { return "<no Bundle.main.resourceURL>" }
+        return resourceURL
+            .appendingPathComponent("gs")
+            .appendingPathComponent("bin")
+            .appendingPathComponent("gs")
+            .path
     }
 
     /// Runs Ghostscript with the given arguments, reading from inputURL and writing to outputURL.
@@ -36,8 +60,12 @@ public struct GhostscriptRunner: Sendable {
 
         let process = Process()
         process.executableURL = binaryURL
+        let resourceInitURL = libURL.deletingLastPathComponent()
+            .appendingPathComponent("Resource")
+            .appendingPathComponent("Init")
+        let gsLibPath = [libURL.path, resourceInitURL.path].joined(separator: ":")
         process.environment = ProcessInfo.processInfo.environment.merging(
-            ["GS_LIB": libURL.path]
+            ["GS_LIB": gsLibPath]
         ) { _, new in new }
 
         var args = [

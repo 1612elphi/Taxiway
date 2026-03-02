@@ -11,11 +11,24 @@ public struct FixProgress: Sendable {
     }
 }
 
-public enum FixError: Error, Sendable {
+public enum FixError: Error, Sendable, LocalizedError {
     case ghostscriptNotAvailable
     case noFixesRequested
     case ghostscriptFailed(GhostscriptError)
     case pdfKitFailed(String)
+
+    public var errorDescription: String? {
+        switch self {
+        case .ghostscriptNotAvailable:
+            return "Ghostscript is not available. Expected binary at: \(GhostscriptRunner.expectedBundledPath)"
+        case .noFixesRequested:
+            return "No fixes were queued to apply."
+        case .ghostscriptFailed(let gsError):
+            return gsError.localizedDescription
+        case .pdfKitFailed(let reason):
+            return reason
+        }
+    }
 }
 
 public struct QueuedFix: Sendable {

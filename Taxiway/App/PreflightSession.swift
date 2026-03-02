@@ -69,8 +69,11 @@ final class PreflightSession: Identifiable {
             } else {
                 try? FileManager.default.removeItem(at: tempOutput)
             }
+        } catch let error as FixError {
+            fixError = error.localizedDescription
+            try? FileManager.default.removeItem(at: tempOutput)
         } catch {
-            fixError = "Fix failed: \(error.localizedDescription)"
+            fixError = error.localizedDescription
             try? FileManager.default.removeItem(at: tempOutput)
         }
 
