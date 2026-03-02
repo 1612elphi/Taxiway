@@ -93,4 +93,4 @@ Full reports in JSON, CSV, and formatted PDF. Every export includes the complete
 
 ## License
 
-[The Unlicense](LICENSE) — public domain. Do whatever you want.
+[Apache License 2.0](LICENSE). The bundled Ghostscript binary retains its own [AGPL license](https://www.gnu.org/licenses/agpl-3.0.html).
