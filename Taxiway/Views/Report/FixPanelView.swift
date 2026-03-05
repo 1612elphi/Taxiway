@@ -5,15 +5,65 @@ struct FixPanelView: View {
     let session: PreflightSession
 
     @State private var configuringTool: FixDescriptor?
+    @State private var gsAvailable = GhostscriptRunner.system() != nil
+    @State private var showSetupSheet = false
 
     private let fixRegistry = FixRegistry.default
 
     var body: some View {
         VStack(alignment: .leading, spacing: TaxiwayTheme.sectionSpacing) {
+            if !gsAvailable {
+                ghostscriptBanner
+            }
             queuedFixesSection
             Divider()
             availableToolsSection
         }
+        .onAppear { gsAvailable = GhostscriptRunner.system() != nil }
+        .sheet(isPresented: $showSetupSheet, onDismiss: {
+            gsAvailable = GhostscriptRunner.system() != nil
+        }) {
+            GhostscriptSetupSheet()
+        }
+    }
+
+    // MARK: - Ghostscript Banner
+
+    @ViewBuilder
+    private var ghostscriptBanner: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.title2)
+                .foregroundStyle(.orange)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Ghostscript Required")
+                    .font(TaxiwayTheme.monoSmall)
+                    .fontWeight(.bold)
+                Text("Most fixes need Ghostscript installed on your system.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+
+            Button("Setup Instructions\u{2026}") {
+                showSetupSheet = true
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(.orange)
+            .controlSize(.small)
+
+            Button {
+                gsAvailable = GhostscriptRunner.system() != nil
+            } label: {
+                Image(systemName: "arrow.clockwise")
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+        }
+        .padding(12)
+        .background(.orange.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
     }
 
     // MARK: - Queued Fixes
@@ -85,22 +135,6 @@ struct FixPanelView: View {
                     .background(.quaternary.opacity(0.3), in: RoundedRectangle(cornerRadius: 6))
                 }
 
-                // GS unavailability warning
-                if session.fixQueue.requiresGhostscript {
-                    let engine = FixEngine()
-                    if !engine.ghostscriptAvailable {
-                        HStack(spacing: 6) {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                                .foregroundStyle(.yellow)
-                            Text("Ghostscript not bundled. Run scripts/build-ghostscript.sh and rebuild.")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                        .padding(8)
-                        .background(.yellow.opacity(0.1), in: RoundedRectangle(cornerRadius: 6))
-                    }
-                }
-
                 Button {
                     Task { await session.applyFixes() }
                 } label: {
@@ -109,7 +143,7 @@ struct FixPanelView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(.orange)
-                .disabled(session.isFixing)
+                .disabled(session.isFixing || (!gsAvailable && session.fixQueue.requiresGhostscript))
             }
         }
     }
@@ -148,6 +182,10 @@ struct FixPanelView: View {
                     if queued {
                         Image(systemName: "checkmark.circle.fill")
                             .foregroundStyle(.green)
+                    } else if !gsAvailable && descriptor.category == .ghostscript {
+                        Text("Requires Ghostscript")
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
                     } else if needsConfiguration(descriptor) {
                         Button("Configure") {
                             configuringTool = descriptor
@@ -165,6 +203,7 @@ struct FixPanelView: View {
                 }
                 .padding(8)
                 .background(.quaternary.opacity(0.3), in: RoundedRectangle(cornerRadius: 6))
+                .opacity(!gsAvailable && descriptor.category == .ghostscript ? 0.5 : 1.0)
             }
         }
         .popover(item: $configuringTool) { descriptor in
