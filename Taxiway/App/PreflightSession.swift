@@ -38,7 +38,7 @@ final class PreflightSession: Identifiable {
 
         // Check GS availability if needed
         if fixQueue.requiresGhostscript && !engine.ghostscriptAvailable {
-            fixError = "Ghostscript is not available. Build it with scripts/build-ghostscript.sh and rebuild the app."
+            fixError = "Ghostscript not found. Install it with: brew install ghostscript"
             return
         }
 

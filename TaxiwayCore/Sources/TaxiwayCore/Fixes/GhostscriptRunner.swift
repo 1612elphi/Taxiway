@@ -8,7 +8,7 @@ public enum GhostscriptError: Error, Sendable, LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .binaryNotFound:
-            return "The bundled Ghostscript binary was not found."
+            return "Ghostscript not found. Install it with: brew install ghostscript"
         case .executionFailed(let reason):
             return "Ghostscript failed to launch: \(reason)"
         case .nonZeroExit(let code, let stderr):
@@ -19,54 +19,74 @@ public enum GhostscriptError: Error, Sendable, LocalizedError {
 }
 
 public struct GhostscriptRunner: Sendable {
-    public let binaryURL: URL
-    public let libURL: URL
+    public let binaryPath: String
 
-    public init(binaryURL: URL, libURL: URL) {
-        self.binaryURL = binaryURL
-        self.libURL = libURL
+    public init(binaryPath: String) {
+        self.binaryPath = binaryPath
     }
 
-    /// Attempts to locate a bundled Ghostscript in the app's Resources/gs/ directory.
-    public static func bundled() -> GhostscriptRunner? {
-        guard let resourceURL = Bundle.main.resourceURL else { return nil }
-        let gsDir = resourceURL.appendingPathComponent("gs")
-        let binaryURL = gsDir
-            .appendingPathComponent("bin")
-            .appendingPathComponent("gs")
-        let libURL = gsDir.appendingPathComponent("lib")
+    /// Well-known paths where Ghostscript may be installed.
+    private static let searchPaths = [
+        "/opt/homebrew/bin/gs",    // Apple Silicon Homebrew
+        "/usr/local/bin/gs",       // Intel Homebrew / manual install
+        "/usr/bin/gs",             // System install
+    ]
 
-        guard FileManager.default.fileExists(atPath: binaryURL.path) else { return nil }
-        return GhostscriptRunner(binaryURL: binaryURL, libURL: libURL)
+    /// Finds a system-installed Ghostscript, or nil if not found.
+    public static func system() -> GhostscriptRunner? {
+        // Try `which gs` first (covers PATH customizations)
+        if let path = whichGS() {
+            return GhostscriptRunner(binaryPath: path)
+        }
+        // Fall back to well-known paths
+        for path in searchPaths {
+            if FileManager.default.isExecutableFile(atPath: path) {
+                return GhostscriptRunner(binaryPath: path)
+            }
+        }
+        return nil
     }
 
-    /// Returns the path where the bundled Ghostscript binary is expected, for diagnostics.
-    public static var expectedBundledPath: String {
-        guard let resourceURL = Bundle.main.resourceURL else { return "<no Bundle.main.resourceURL>" }
-        return resourceURL
-            .appendingPathComponent("gs")
-            .appendingPathComponent("bin")
-            .appendingPathComponent("gs")
-            .path
+    /// Runs `which gs` to locate the binary on PATH.
+    private static func whichGS() -> String? {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/which")
+        process.arguments = ["gs"]
+        // Inherit a basic shell PATH so Homebrew locations are visible.
+        var env = ProcessInfo.processInfo.environment
+        let extra = "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"
+        env["PATH"] = env["PATH"].map { "\(extra):\($0)" } ?? extra
+        process.environment = env
+
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        process.standardError = FileHandle.nullDevice
+
+        do {
+            try process.run()
+            process.waitUntilExit()
+        } catch {
+            return nil
+        }
+        guard process.terminationStatus == 0 else { return nil }
+
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        let path = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let path, !path.isEmpty, FileManager.default.isExecutableFile(atPath: path) else {
+            return nil
+        }
+        return path
     }
 
     /// Runs Ghostscript with the given arguments, reading from inputURL and writing to outputURL.
-    /// Returns the combined stdout output on success.
     @discardableResult
     public func run(arguments: [String], inputURL: URL, outputURL: URL) throws -> String {
-        guard FileManager.default.fileExists(atPath: binaryURL.path) else {
+        guard FileManager.default.isExecutableFile(atPath: binaryPath) else {
             throw GhostscriptError.binaryNotFound
         }
 
         let process = Process()
-        process.executableURL = binaryURL
-        let resourceInitURL = libURL.deletingLastPathComponent()
-            .appendingPathComponent("Resource")
-            .appendingPathComponent("Init")
-        let gsLibPath = [libURL.path, resourceInitURL.path].joined(separator: ":")
-        process.environment = ProcessInfo.processInfo.environment.merging(
-            ["GS_LIB": gsLibPath]
-        ) { _, new in new }
+        process.executableURL = URL(fileURLWithPath: binaryPath)
 
         var args = [
             "-dNOPAUSE", "-dBATCH", "-dQUIET",
@@ -76,6 +96,12 @@ public struct GhostscriptRunner: Sendable {
         args.append(contentsOf: arguments)
         args.append(inputURL.path)
         process.arguments = args
+
+        // Log reproducible command for debugging
+        let cmdStr = ([binaryPath] + args).map { arg in
+            arg.contains(" ") || arg.contains("'") ? "'\(arg)'" : arg
+        }.joined(separator: " ")
+        print("[GhostscriptRunner] \(cmdStr)")
 
         let stdoutPipe = Pipe()
         let stderrPipe = Pipe()

@@ -20,7 +20,7 @@ public enum FixError: Error, Sendable, LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .ghostscriptNotAvailable:
-            return "Ghostscript is not available. Expected binary at: \(GhostscriptRunner.expectedBundledPath)"
+            return "Ghostscript not found. Install it with: brew install ghostscript"
         case .noFixesRequested:
             return "No fixes were queued to apply."
         case .ghostscriptFailed(let gsError):
@@ -46,7 +46,7 @@ private let mmToPoints: Double = 72.0 / 25.4
 public struct FixEngine: Sendable {
     private let gsRunner: GhostscriptRunner?
 
-    public init(gsRunner: GhostscriptRunner? = .bundled()) {
+    public init(gsRunner: GhostscriptRunner? = .system()) {
         self.gsRunner = gsRunner
     }
 
@@ -136,7 +136,14 @@ public struct FixEngine: Sendable {
     /// Builds the combined Ghostscript arguments for all GS-category fixes.
     /// This method is static and pure for testability.
     public static func buildGSArguments(for fixes: [QueuedFix]) -> [String] {
-        var args: [String] = []
+        var args: [String] = [
+            // Baseline font-safety flags: ensure pdfwrite preserves font
+            // encodings and embedding through the round-trip, and prevent
+            // unexpected page rotation.
+            "-dEmbedAllFonts=true",
+            "-dSubsetFonts=true",
+            "-dAutoRotatePages=/None",
+        ]
         var preambles: [String] = []
 
         let fixIDs = Set(fixes.map(\.descriptor.id))
@@ -154,12 +161,8 @@ public struct FixEngine: Sendable {
             ])
         }
 
-        if fixIDs.contains("fix.embed_fonts") {
-            args.append(contentsOf: [
-                "-dEmbedAllFonts=true",
-                "-dSubsetFonts=true",
-            ])
-        }
+        // Note: fix.embed_fonts is handled by the baseline args above
+        // (-dEmbedAllFonts, -dSubsetFonts). No additional arguments needed.
 
         if fixIDs.contains("fix.downsample_images") {
             args.append(contentsOf: [
