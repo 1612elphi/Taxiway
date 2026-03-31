@@ -1,5 +1,7 @@
 import Foundation
 
+#if os(macOS)
+
 public enum GhostscriptError: Error, Sendable, LocalizedError {
     case binaryNotFound
     case executionFailed(String)
@@ -127,3 +129,5 @@ public struct GhostscriptRunner: Sendable {
         return stdoutString
     }
 }
+
+#endif

@@ -1,6 +1,8 @@
 import Foundation
 import PDFKit
 
+#if os(macOS)
+
 public struct FixProgress: Sendable {
     public let stage: String
     public let detail: String?
@@ -283,3 +285,5 @@ private func decodeParam(_ json: String?, key: String, fallback: String) -> Stri
           let value = dict[key] as? String else { return fallback }
     return value
 }
+
+#endif
